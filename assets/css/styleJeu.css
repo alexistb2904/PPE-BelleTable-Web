@@ -1,0 +1,450 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 16px;
+	line-height: 1.6;
+	margin: 0;
+	padding: 0;
+	background-color: #1b1b1b;
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	height: 100vh;
+
+	--primary: #f1356d;
+}
+
+main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+	width: 80%;
+	height: 80%;
+	border-radius: 15px;
+	background-color: #272727;
+	padding: 3%;
+	overflow-y: auto;
+}
+
+@supports (scrollbar-color: auto) {
+	main {
+		scrollbar-color: var(--primary) #272727;
+		scrollbar-width: thin;
+		scrollbar-track-color: #272727;
+		scrollbar-gutter: stable;
+	}
+}
+
+main .title {
+	text-align: center;
+	height: 10%;
+	width: 100%;
+}
+
+main .content {
+	width: 100%;
+	height: 90%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1vh;
+}
+
+footer {
+	padding: 1vh;
+}
+
+.popup-container {
+	width: 60%;
+	position: fixed;
+	opacity: 0.2;
+	bottom: -30%;
+	left: 50%;
+	transform: translate(-50%);
+	z-index: 50;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	animation: fadeIn 1s forwards;
+}
+
+.base-notif,
+.red-notif {
+	display: flex;
+	border-radius: 10px;
+	gap: 2vh;
+	border-left: 0.5vh solid var(--primary);
+	color: white;
+	padding: 2%;
+	background-color: #1b1b1b;
+	box-shadow: 0.25vh 0.25vh 0.5vh #1b1b1b;
+}
+
+.red-notif {
+	border-left: 0.5vh solid red;
+	background-color: rgb(239, 86, 86);
+}
+
+.red-notif #title-popup {
+	color: red;
+}
+
+.red-notif #title-popup span {
+	color: red;
+}
+
+.red-notif div:last-of-type,
+.base-notif div:last-of-type {
+	font-size: 80%;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.popup-container md-outlined-button {
+	margin-top: 3%;
+	--md-outlined-button-outline-color: red;
+	--md-outlined-button-label-text-color: red;
+}
+
+a {
+	text-decoration: none;
+	color: white;
+}
+
+#app {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	width: 80%;
+	height: 80%;
+	border-radius: 15px;
+	background-color: #272727;
+	padding: 3%;
+	overflow: hidden;
+}
+
+#app .startPage,
+#app .configPage,
+#app .gamePage {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+}
+
+#app .firstText {
+	transform: translateX(0);
+	font-size: 5vw;
+	animation: fromRight 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+	display: inline-block;
+}
+
+#app .firstText:nth-child(2) {
+	font-size: 5vw;
+	animation: fromRight 1.5s 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+#app .firstText:nth-child(3) {
+	font-size: 6vw;
+	animation: fromRightSpecial 4s 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+	margin-bottom: 3vh;
+}
+
+#app .exitAnimation {
+	animation: exitToLeft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+#app .startPage .actionButton {
+	transform: translateX(0);
+	animation: fromRight 1s 2.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+	font-size: 3vw;
+	width: 25%;
+}
+#app .actionButton {
+	--bg: #151515;
+	--hover-bg: var(--primary);
+	--hover-text: #000;
+	color: #fff;
+	cursor: pointer;
+	border: 1px solid var(--bg);
+	border-radius: 15px;
+	padding: 0.5em 1em;
+	background: var(--bg);
+	transition: 0.2s;
+	font-size: 1.5vw;
+}
+
+#app .actionButton:hover {
+	color: var(--hover-text);
+	transform: translate(-0.25rem, -0.25rem);
+	background: var(--hover-bg);
+	box-shadow: 0.5rem 0.5rem var(--bg);
+}
+
+#app .actionButton:active {
+	transform: translate(0, 0);
+	box-shadow: none;
+}
+
+@keyframes fromRight {
+	0% {
+		transform: translateX(-100%);
+		opacity: 0;
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes fromRightSpecial {
+	0% {
+		transform: translateX(-100%);
+		opacity: 0;
+	}
+	20% {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	40%,
+	50% {
+		transform: scale(1.4) rotate(-10deg);
+	}
+	60%,
+	100% {
+		transform: scale(1) rotate(-5deg);
+	}
+}
+
+@keyframes exitToLeft {
+	0% {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+}
+
+#app .configPage {
+	justify-content: space-around;
+	animation: fromRight ease-in-out 1.5s;
+}
+
+#app .configPage h1,
+#app .gamePage h1 {
+	font-size: 4vw;
+}
+
+#app .configContainer {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+#app .configContainer .configItem {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin: 1vh 0;
+}
+
+#app .configContainer .configItem label {
+	width: 40%;
+	display: inline-flex;
+	flex-direction: column;
+	justify-content: center;
+	font-size: 1vw;
+}
+
+#app .configContainer .configItem select,
+#app .configContainer .configItem input {
+	width: 100%;
+	padding: 0.25em;
+	border-radius: 15px;
+	border: 1px solid #1a1a1a;
+	background-color: #272727;
+	color: white;
+	font-size: 2vw;
+}
+
+#app .gamePage .questionContainer {
+	position: relative;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#app .gamePage .questionContainer .counter,
+#app .volume {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	padding: 0.5rem;
+	display: inline-block;
+	border-radius: 0.5rem;
+	background-color: #1a1a1a;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+	font-size: 1.5vw;
+}
+#app .gamePage .questionContainer .timer,
+#app .gamePage .timerGlobal {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	padding: 0.5rem;
+	display: inline-block;
+	border-radius: 0.5rem;
+	background-color: #1a1a1a;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+	font-size: 1.5vw;
+}
+
+#app .gamePage .timerGlobal {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: min-content;
+	height: min-content;
+}
+
+#app .volume {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 4vw;
+	bottom: 15%;
+	z-index: 2;
+}
+
+#app .volume img {
+	width: 2vw;
+}
+
+#app .gamePage .questionContainer h1 {
+	width: 80%;
+	text-align: center;
+	font-size: 2vw;
+}
+
+#app .gamePage .questionContainer .reponses {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 0.5rem;
+	background-color: #1a1a1a;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+	padding: 0.25rem;
+	width: 80%;
+	font-size: 14px;
+}
+
+#app .gamePage .questionContainer .reponses .radio {
+	flex: 1 1 auto;
+	text-align: center;
+}
+
+#app .gamePage .questionContainer .reponses .radio input {
+	display: none;
+}
+#app .gamePage .questionContainer .reponses .radio .reponse {
+	display: flex;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.5rem;
+	border: none;
+	padding: 0.5rem 0;
+	color: white;
+	transition: all 0.15s ease-in-out;
+}
+
+#app .gamePage .questionContainer .reponses .radio .reponse:hover {
+	background-color: #222222;
+}
+
+#app .gamePage .questionContainer .reponses .radio input:checked + .reponse {
+	background-color: #272727;
+	font-weight: 600;
+}
+
+#app .gamePage .questionContainer .reponses.background_true {
+	background-color: #174d19;
+}
+
+#app .gamePage .questionContainer .reponses.background_false {
+	background-color: #621919;
+}
+
+#app .resultPage {
+	width: 80%;
+	padding: 0 1rem;
+	gap: 1vh;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+}
+
+@supports (scrollbar-color: auto) {
+	.resultPage {
+		scrollbar-color: var(--primary) #272727;
+		scrollbar-width: thin;
+		scrollbar-track-color: #272727;
+		scrollbar-gutter: stable;
+	}
+}
+
+#app .resultPage h1 {
+	font-size: 3vw;
+	text-align: center;
+}
+
+#app .resultPage .score {
+	font-size: 2vw;
+	text-align: center;
+	padding: 0.5rem;
+	border-radius: 0.5rem;
+	margin-bottom: 2vh;
+	font-weight: 600;
+	background-color: #1a1a1a;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+}
+
+#app .resultPage .resultContainer {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+}
+
+#app .resultPage .resultContainer .question {
+	font-size: 1.5vw;
+}
+
+#app .resultPage .actionButton {
+	margin: 1vh auto;
+	width: 80%;
+	font-size: 1.5vw;
+}
