@@ -64,9 +64,10 @@ Si vous ne souhaitez pas utiliser Docker, vous pouvez tout de même exécuter ce
 
         ```makefile
         DB_HOST=adresse_vers_mysql
-        DB_NAME=nom_de_ta_base
-        DB_USER=utilisateur_mysql
-        DB_PASS=mdp_utilisateur_mysql
+        DB_PORT=3306
+        DB_DATABASE=nom_de_ta_base
+        DB_USERNAME=utilisateur_mysql
+        DB_PASSWORD=mdp_utilisateur_mysql
         ```
 
 5.  **Créer la base de données** :

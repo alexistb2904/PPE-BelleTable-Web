@@ -742,7 +742,7 @@ if (!function_exists('startSession')) {
             // Envoi du token par email
             $to = $email;
             $subject = 'Changement de mot de passe';
-            $message = 'Cliquez sur le lien suivant pour changer votre mot de passe: https://' . $_SERVER['HTTP_HOST'] . '/?email=' . $email . '&token=' . $token;
+            $message = 'Cliquez sur le lien suivant pour changer votre mot de passe: http://' . $_SERVER['HTTP_HOST'] . '/?email=' . $email . '&token=' . $token;
             $headers = 'From: TheQuiz';
             mail($to, $subject, $message, $headers);
 
