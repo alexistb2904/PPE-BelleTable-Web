@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -7,7 +8,7 @@ $dotenv->load();
 if (!function_exists('startSession')) {
     function startSession()
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
@@ -18,6 +19,15 @@ if (!function_exists('startSession')) {
         return isset($_SESSION['username']);
     }
 
+    function setCookieFunc($variableToSet)
+    {
+        if (!isset($_COOKIE[$variableToSet]) || $_COOKIE[$variableToSet] !== $_SESSION[$variableToSet]) {
+            $cookieVar = $_SESSION[$variableToSet] ?? null;
+            if ($cookieVar !== null) {
+                setcookie($variableToSet, $cookieVar, time() + 3600, '/');
+            }
+        }
+    }
     function isAdmin()
     {
         startSession();
@@ -27,25 +37,111 @@ if (!function_exists('startSession')) {
     // PARTIE QUIZ
 
     // get.php
-    function getQuestionForQuestionnaire($id)
+    function getQuestionnaire($id)
     {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin()) {
-            try {
-                $sql = "SELECT id_question, question, type, choix, reponses, id_creator, points FROM questions WHERE id_questionnaire = :id_questionnaire";
-                $stmt = $cnx->prepare($sql);
-                $stmt->execute([':id_questionnaire' => $id]);
-                $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                return json_encode(['success' => $questions]);
-            } catch (PDOException $e) {
-                return json_encode(['error' => $e->getMessage()]);
-            }
-        } else {
+
+        if (!isLogin()) {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+
+        try {
+            // Récupérer le questionnaire
+            $sql = "
+            SELECT 
+                q.id,
+                q.nom,
+                t.nom AS theme,
+                u.id AS cree_par,
+                q.creation_date,
+                COUNT(DISTINCT s.id_user) AS nb_participants
+            FROM questionnaire q
+            JOIN theme t ON q.theme = t.id_theme
+            JOIN users u ON q.created_by = u.id
+            LEFT JOIN scores s ON s.id_questionnaire = q.id
+            WHERE q.id = :id
+            GROUP BY q.id
+        ";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $questionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$questionnaire) {
+                return json_encode(['error' => 'Questionnaire introuvable']);
+            }
+
+            // Récupérer les questions + leurs choix
+            $sql = "
+            SELECT 
+                q.id_question,
+                q.question,
+                t.nom AS type,
+                q.id_creator
+            FROM questions q
+            JOIN types t ON q.type = t.id_type
+            WHERE q.id_questionnaire = :id
+            ";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Pour chaque question récupérer les choix
+            foreach ($questions as &$question) {
+                $sql = "
+                SELECT 
+                    c.id,
+                    c.texte,
+                    c.est_reponse,
+                    c.points
+                FROM choix c
+                WHERE c.id_question = :id_question
+            ";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':id_question' => $question['id_question']]);
+                $question['choix'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            // Regrouper les données
+            $questionnaire['questions'] = $questions;
+
+            return json_encode(['success' => $questionnaire]);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+        /* Exemple de retour 
+        {
+        "success": {
+            "id": 1,
+            "nom": "Quiz PHP",
+            "theme": "Programmation",
+            "cree_par": 1,
+            "creation_date": "2025-03-01 12:00:00",
+            "nb_participants": 5,
+            "questions": [
+            {
+                "id_question": 10,
+                "question": "Qu'est-ce que PDO ?",
+                "type": "Choix Multiples",
+                "id_creator": 2,
+                "choix": [
+                {
+                    "id": 20,
+                    "texte": "Une extension PHP pour gérer la base de données",
+                    "est_reponse": 1,
+                    "points": 1
+                },
+                ...
+                ]
+            },
+            ...
+            ]
+        }
+        }
+        */
     }
+
 
     // getAll.php
     function getAllQuestionnaires()
@@ -55,12 +151,21 @@ if (!function_exists('startSession')) {
         startSession();
         if (isLogin()) {
             try {
-                $sql = "SELECT q.id AS questionnaire_id, q.nom AS questionnaire_nom, t.nom AS theme_nom, " .
-                    "COUNT(qs.id_question) AS nombre_de_questions FROM questionnaire q " .
-                    "LEFT JOIN theme t ON q.theme = t.id_theme " .
-                    "LEFT JOIN questions qs ON q.id = qs.id_questionnaire " .
-                    "LEFT JOIN users u ON q.created_by = u.id " .
-                    "GROUP BY q.id, q.nom, t.nom";
+                $sql = "SELECT 
+                        q.id,
+                        q.nom,
+                        t.nom AS theme,
+                        u.id AS cree_par,
+                        q.creation_date,
+                        COUNT(DISTINCT ques.id_question) AS nb_questions,
+                        COUNT(DISTINCT s.id_user) AS nb_participants
+                        FROM questionnaire q
+                        JOIN theme t ON q.theme = t.id_theme
+                        JOIN users u ON q.created_by = u.id
+                        LEFT JOIN questions ques ON ques.id_questionnaire = q.id
+                        LEFT JOIN scores s ON s.id_questionnaire = q.id
+                        GROUP BY q.id
+                        ";
                 $stmt = $cnx->prepare($sql);
                 $stmt->execute();
                 $questionnaires = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -71,48 +176,175 @@ if (!function_exists('startSession')) {
         } else {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+        /* Exemple de retour 
+        {
+        "success": [
+            {
+            "id": 1,
+            "nom": "Quiz PHP",
+            "theme": "Programmation",
+            "cree_par": 1,
+            "creation_date": "2025-03-01 12:00:00",
+            "nb_questions": 5,
+            "nb_participants": 5
+            },
+            ...
+        ]
+        }
+        */
     }
 
     // getAllScores.php
-    function getAllPreviousScoreForQuestionnaire($id)
+    function getAllScoresForQuestionnaire($id)
     {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin()) {
-            try {
-                $sql = "SELECT score, score_on, date, username, reponses, groupes.nom AS groupe_name, users.id as user_id, reponses FROM scores INNER JOIN users on users.id = scores.id_user INNER JOIN groupes on users.groupe_id = groupes.id WHERE id_questionnaire = :id_questionnaire";
-                $stmt = $cnx->prepare($sql);
-                $stmt->execute([':id_questionnaire' => $id]);
-                $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                return json_encode(['success' => $scores]);
-            } catch (PDOException $e) {
-                return json_encode(['error' => $e->getMessage()]);
-            }
-        } else {
+
+        if (!isLogin()) {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+
+        try {
+            // 1. Récupérer tous les scores du questionnaire avec utilisateur et groupe
+            $sql = "SELECT scores.id as score_id, score, score_on, date, username, groupes.nom AS groupe_name, users.id as user_id
+                FROM scores
+                INNER JOIN users ON users.id = scores.id_user
+                INNER JOIN groupes ON users.groupe_id = groupes.id
+                WHERE id_questionnaire = :id_questionnaire";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([':id_questionnaire' => $id]);
+            $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // 2. Pour chaque score, récupérer les réponses données par l'utilisateur
+            $sqlReponses = "SELECT 
+                            q.id_question, 
+                            q.question, 
+                            c.id AS id_choix, 
+                            c.texte AS choix, 
+                            c.est_reponse
+                        FROM reponses_utilisateur ru
+                        INNER JOIN choix c ON c.id = ru.id_choix
+                        INNER JOIN questions q ON q.id_question = ru.id_question
+                        WHERE ru.id_score = :id_score";
+            $stmtReponses = $cnx->prepare($sqlReponses);
+
+            foreach ($scores as &$score) {
+                $stmtReponses->execute([':id_score' => $score['score_id']]);
+                $score['reponses'] = $stmtReponses->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            return json_encode(['success' => $scores]);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+        /* Exemple de retour 
+        {
+        "success": [
+            {
+            "score_id": 10,
+            "score": 7,
+            "score_on": 10,
+            "date": "2025-03-15 14:00:00",
+            "username": "Alexis",
+            "groupe_name": "BTS SIO2",
+            "user_id": 3,
+            "reponses": [
+                {
+                "id_question": 1,
+                "question": "Quelle est la capitale de la France ?",
+                "id_choix": 5,
+                "choix": "Paris",
+                "est_reponse": 1
+                },
+                {
+                "id_question": 2,
+                "question": "Combien font 2 + 2 ?",
+                "id_choix": 8,
+                "choix": "4",
+                "est_reponse": 1
+                }
+            ]
+            }
+        ]
+        }
+        */
     }
+
 
     function getAllScoreForAllQuestionnaire()
     {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin()) {
-            try {
-                $sql = "SELECT score, score_on, date, username, reponses, groupes.nom AS groupe_name, users.id as user_id, reponses, id_questionnaire FROM scores INNER JOIN users on users.id = scores.id_user INNER JOIN groupes on users.groupe_id = groupes.id";
-                $stmt = $cnx->prepare($sql);
-                $stmt->execute();
-                $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                return json_encode(['success' => $scores]);
-            } catch (PDOException $e) {
-                return json_encode(['error' => $e->getMessage()]);
-            }
-        } else {
+
+        if (!isLogin()) {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+
+        try {
+            // 1. Récupération des scores + infos utilisateur/groupe/questionnaire
+            $sql = "SELECT scores.id as score_id, score, score_on, date, username, groupes.nom AS groupe_name, users.id as user_id, id_questionnaire
+                FROM scores
+                INNER JOIN users ON users.id = scores.id_user
+                INNER JOIN groupes ON users.groupe_id = groupes.id";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute();
+            $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // 2. Récupération des réponses liées à chaque score avec question et choix en clair
+            $sqlReponses = "SELECT 
+                            q.id_question, 
+                            q.question, 
+                            c.id AS id_choix, 
+                            c.texte AS choix, 
+                            c.est_reponse
+                        FROM reponses_utilisateur ru
+                        INNER JOIN choix c ON c.id = ru.id_choix
+                        INNER JOIN questions q ON q.id_question = ru.id_question
+                        WHERE ru.id_score = :id_score";
+            $stmtReponses = $cnx->prepare($sqlReponses);
+
+            foreach ($scores as &$score) {
+                $stmtReponses->execute([':id_score' => $score['score_id']]);
+                $score['reponses'] = $stmtReponses->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            return json_encode(['success' => $scores]);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+
+        /*
+        Exemple de retour :
+        {
+        "success": [
+            {
+            "score_id": 10,
+            "score": 8,
+            "score_on": 10,
+            "date": "2025-03-15 13:45:00",
+            "username": "Alexis",
+            "groupe_name": "BTS SIO2",
+            "user_id": 5,
+            "id_questionnaire": 3,
+            "reponses": [
+                {
+                "id_question": 1,
+                "question": "Combien font 6 x 7 ?",
+                "id_choix": 7,
+                "choix": "42",
+                "est_reponse": 1
+                },
+                ...
+            ]
+            }
+        ]
+        }
+    */
     }
+
+
 
     // getScore.php
     function getScoreForQuestionnaire($id)
@@ -120,49 +352,147 @@ if (!function_exists('startSession')) {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin()) {
-            try {
-                $sql = "SELECT score, score_on, date, username, reponses, groupes.nom AS groupe_name, users.id as user_id, reponses FROM scores INNER JOIN users on users.id = scores.id_user INNER JOIN groupes on users.groupe_id = groupes.id WHERE id_questionnaire = :id_questionnaire AND id_user = :id_user";
-                $stmt = $cnx->prepare($sql);
-                $stmt->execute([':id_questionnaire' => $id, ':id_user' => $_SESSION['id']]);
-                $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                return json_encode(['success' => $scores]);
-            } catch (PDOException $e) {
-                return json_encode(['error' => $e->getMessage()]);
-            }
-        } else {
+
+        if (!isLogin()) {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+
+        try {
+            // Récupérer le score de l'utilisateur pour ce questionnaire
+            $sql = "
+        SELECT 
+            s.id AS score_id,
+            s.score,
+            s.score_on,
+            s.date,
+            u.username,
+            u.id AS user_id,
+            g.nom AS groupe_name
+        FROM scores s
+        INNER JOIN users u ON u.id = s.id_user
+        INNER JOIN groupes g ON u.groupe_id = g.id
+        WHERE s.id_questionnaire = :id_questionnaire
+        AND s.id_user = :id_user
+        ";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([
+                ':id_questionnaire' => $id,
+                ':id_user' => $_SESSION['id']
+            ]);
+            $scoreData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$scoreData) {
+                return json_encode(['success' => []]);
+            }
+
+            // Récupérer les réponses utilisateur associées avec les questions et les choix
+            foreach ($scoreData as &$score) {
+                $sql = "
+                SELECT 
+                    q.id_question,
+                    q.question,
+                    c.id AS id_choix,
+                    c.texte AS choix,
+                    c.est_reponse
+                FROM reponses_utilisateur ru
+                INNER JOIN choix c ON c.id = ru.id_choix
+                INNER JOIN questions q ON q.id_question = ru.id_question
+                WHERE ru.id_score = :score_id
+                ";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':score_id' => $score['score_id']]);
+                $reponses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $score['reponses'] = $reponses;
+            }
+
+            return json_encode(['success' => $scoreData]);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+        /* Exemple de retour 
+        {
+        "success": {
+            "score_id": 10,
+            "score": 7,
+            "score_on": 10,
+            "date": "2025-03-15 14:00:00",
+            "username": "mathieu",
+            "user_id": 3,
+            "groupe_name": "BTS SIO2",
+            "reponses": [
+                {
+                    "id_question": 1,
+                    "question": "Quelle est la capitale de la France ?",
+                    "id_choix": 5,
+                    "choix": "Paris",
+                    "est_reponse": 1
+                },
+                ...
+                ]
+        }
+        } */
     }
+
+
 
     // registerScore.php
     function registerScore($id_questionnaire, $score, $score_on, $id_user, $reponses)
     {
+        /* PAYLOAD ATTENDU :
+        {
+        "id_user": 3,
+        "score": 7,
+        "score_on": 10,
+        "reponses": [
+            { "id_question": 12, "id_choix": 45 },
+            { "id_question": 13, "id_choix": 48 }
+        ]
+        }
+        */
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin()) {
-            if ($_SESSION['id'] != $id_user) {
-                echo json_encode(['error' => 'Vous n\'avez pas les droits pour effectuer cette action']);
-            }
-            try {
-                $sql = "INSERT INTO scores (id_user, id_questionnaire, score, score_on, reponses) VALUES (:id_user, :id_questionnaire, :score, :score_on, :reponses)";
-                $stmt = $cnx->prepare($sql);
-                $stmt->execute([
-                    ':id_user' => $_SESSION['id'],
-                    ':id_questionnaire' => $id_questionnaire,
-                    ':score' => $score,
-                    ':score_on' => $score_on,
-                    ':reponses' => $reponses
-                ]);
-                return json_encode(['success' => 'Score enregistré avec succès']);
-            } catch (PDOException $e) {
-                return json_encode(['error' => $e->getMessage()]);
-            }
-        } else {
+        if (!isLogin()) {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
         }
+
+        if ($_SESSION['id'] != $id_user) {
+            return json_encode(['error' => 'Vous n\'avez pas les droits pour effectuer cette action']);
+        }
+
+        try {
+            // 1. Insérer le score
+            $sql = "INSERT INTO scores (id_user, id_questionnaire, score, score_on) 
+                VALUES (:id_user, :id_questionnaire, :score, :score_on)";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([
+                ':id_user' => $_SESSION['id'],
+                ':id_questionnaire' => $id_questionnaire,
+                ':score' => $score,
+                ':score_on' => $score_on
+            ]);
+
+            $id_score = $cnx->lastInsertId();
+
+            // 2. Insérer les réponses dans la table reponses_utilisateur
+            $sql = "INSERT INTO reponses_utilisateur (id_score, id_question, id_choix) 
+                VALUES (:id_score, :id_question, :id_choix)";
+            $stmt = $cnx->prepare($sql);
+            foreach ($reponses as $reponse) {
+                $stmt->execute([
+                    ':id_score' => $id_score,
+                    ':id_question' => $reponse['id_question'],
+                    ':id_choix' => $reponse['id_choix']
+                ]);
+            }
+
+            return json_encode(['success' => 'Score et réponses enregistrés avec succès']);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
     }
+
 
 
 
@@ -175,8 +505,8 @@ if (!function_exists('startSession')) {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin() && ($_SESSION['role'] == '1' || ($devMode && $_ENV['DEV_MODE'] == 'true'))) {
-            if ($devMode && $_ENV['DEV_MODE'] == 'true') {
+        if (isLogin() && ($_SESSION['role'] == '1')) {
+            if ($devMode) {
                 logout();
             }
             try {
@@ -355,9 +685,9 @@ if (!function_exists('startSession')) {
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$user) {
-                if (!preg_match($regexCheck, $password)) {
+                /*if (!preg_match($regexCheck, $password)) {
                     return json_encode(['error' => 'Le mot de passe doit contenir au moins 8 caractères et 16 maximum, une lettre, un chiffre et un caractère spécial']);
-                }
+                }*/
                 $sqlRegister = "INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, '0')";
                 if (isset($groupId) && $groupId != null && $groupId != '') {
                     $sqlRegister = "INSERT INTO users (username, email, password, role, groupe_id) VALUES (:username, :email, :password, '0', :group_id)";
@@ -414,7 +744,9 @@ if (!function_exists('startSession')) {
             $subject = 'Changement de mot de passe';
             $message = 'Cliquez sur le lien suivant pour changer votre mot de passe: https://' . $_SERVER['HTTP_HOST'] . '/?email=' . $email . '&token=' . $token;
             $headers = 'From: TheQuiz';
-            //mail($to, $subject, $message, $headers);
+            mail($to, $subject, $message, $headers);
+
+
 
             // RETURN DEBUG
             return json_encode(['success' => 'Token envoyé avec succès', 'token' => $token, 'email' => $email]);
@@ -442,15 +774,17 @@ if (!function_exists('startSession')) {
             if (!$user) {
                 return json_encode(['error' => 'Utilisateur non trouvé']);
             } else {
-                $userToken = $user['token'];
-                $userTokenExpire = $user['token_expire'];
+                $userToken = $user['token'] ?? null;
+                $userTokenExpire = $user['token_expire'] ?? null;
                 $now = date('Y-m-d H:i:s');
                 if ($userToken == $token && $userTokenExpire > $now) {
                     return true;
                 } else {
                     return false;
                 }
+                return false;
             }
+            return false;
         } else {
             return json_encode(['error' => 'Email et token non trouvés']);
         }
@@ -461,9 +795,10 @@ if (!function_exists('startSession')) {
         require_once 'db.php';
         global $cnx;
         if ($password == $passwordConfirm) {
-            if (checkTokenValidity($email, $token)) {
+            $tokenIsValid = checkTokenValidity($email, $token);
+            if ($tokenIsValid === true) {
                 try {
-                    $sql = "UPDATE users SET password = :password WHERE email = :email";
+                    $sql = "UPDATE users SET password = :password, token = NULL, token_expire = NULL WHERE email = :email";
                     $stmt = $cnx->prepare($sql);
                     $stmt->execute([
                         ':password' => hash('sha256', $password),
@@ -643,7 +978,7 @@ if (!function_exists('startSession')) {
         startSession();
         if (isLogin()) {
             try {
-                $sql = "SELECT * FROM types";
+                $sql = "SELECT id_type, nom FROM types";
                 $stmt = $cnx->prepare($sql);
                 $stmt->execute();
                 $types = $stmt->fetchAll(PDO::FETCH_ASSOC);

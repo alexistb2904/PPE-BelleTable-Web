@@ -78,8 +78,8 @@ function configPage() {
                 <label>
                 Quand voir les résultats
                 <select id="results">
-                    <option value="instant">Instantané</option>
                     <option value="page">A la fin uniquement</option>
+					<option value="instant">Instantané</option>
                 </select>
                 </label>
             </div>
@@ -115,19 +115,9 @@ function configPage() {
 	});
 }
 
-function getLibelleType(type) {
-	let libelle = '';
-	listOfTypes.success.forEach((element) => {
-		if (element.id_type === type) {
-			libelle = element.nom;
-		}
-	});
-	return libelle;
-}
-
 // Fonction principale pour démarrer le jeu
 async function startGame(results, time, points) {
-	const amountOfQuestions = questionsToUse.success.length;
+	const amountOfQuestions = questionsToUse.success.questions.length;
 	console.log('Résultats:', results);
 	console.log('Temps:', time);
 	console.log('Points:', points);
@@ -153,7 +143,7 @@ async function startGame(results, time, points) {
 			clearInterval(intervalGlobal);
 			const nombreDeQuestionACompleter = amountOfQuestions - reponseQuestions.length;
 			for (let i = 0; i < nombreDeQuestionACompleter; i++) {
-				reponseQuestions.push(['Pas de réponse']);
+				reponseQuestions.push(['Pas de réponse<<#']);
 			}
 			if (!resultShowed) {
 				showResult(questionsMelange, reponseQuestions);
@@ -165,27 +155,27 @@ async function startGame(results, time, points) {
 	let questionsMelange = []; // Liste pour stocker les questions mélangées
 	console.log('Récupération des questions...');
 	try {
-		const questions = questionsToUse.success; // Extraction des questions
+		const questions = questionsToUse.success.questions; // Extraction des questions
 		console.log('Questions récupérées:', questions);
 
 		let newJSONStructure = {};
 		questions.forEach((question, index) => {
-			if (getLibelleType(question.type) == 'Multiples') {
+			if (question.type == 'Choix multiples') {
 				newJSONStructure[index] = {
-					index: index,
+					index: question.id_question,
 					question: question.question,
-					options: question.choix.split(','),
-					answer: question.reponses.split(','),
-					points: question.points.split(','),
+					options: question.choix.map((choix) => choix.texte + '<<#' + choix.id),
+					answer: question.choix.filter((choix) => choix.est_reponse == 1).map((choix) => choix.texte),
+					points: question.choix.map((choix) => choix.points),
 					type: 'Multiples',
 				};
-			} else if (getLibelleType(question.type) == 'Vrai/Faux') {
+			} else if (question.type == 'Vrai/Faux') {
 				newJSONStructure[index] = {
-					index: index,
+					index: question.id_question,
 					question: question.question,
-					options: ['Vrai', 'Faux'],
-					points: question.points.split(','),
-					answer: [question.reponses],
+					options: question.choix.map((choix) => choix.texte + '<<#' + choix.id),
+					points: question.choix.map((choix) => choix.points),
+					answer: question.choix.filter((choix) => choix.est_reponse == 1).map((choix) => choix.texte),
 					type: 'Vrai/Faux',
 				};
 			}
@@ -235,7 +225,7 @@ async function startGame(results, time, points) {
 							return `
                         <label class="radio">
                             <input type="radio" name="radio">
-                            <span class="reponse">${reponse}</span>
+                            <span class="reponse" data-id="${reponse.split('<<#')[1]}">${reponse.split('<<#')[0]}</span>
                         </label>
                         `;
 						})
@@ -277,33 +267,35 @@ async function startGame(results, time, points) {
 				let reponseToPush = [];
 				reponses.forEach((reponse) => {
 					if (reponse.querySelector('input').checked) {
-						reponseToPush.push(reponse.querySelector('.reponse').textContent);
+						reponseToPush.push(reponse.querySelector('.reponse').textContent + '<<#' + reponse.querySelector('.reponse').dataset.id);
 					}
 				});
 				if (reponseToPush.length == 0) {
-					reponseToPush.push('Pas de réponse');
+					reponseToPush.push('Pas de réponse<<#');
 				}
-				console.log('Réponse sélectionnée:', reponseToPush);
+				console.log(
+					'Réponse sélectionnée:',
+					reponseToPush.map((reponse) => reponse.split('<<#')[0])
+				);
 				console.log('Réponse correcte:', question.answer);
 
 				// Si une réponse est sélectionnée ou si le temps est écoulé
 				if (reponseToPush || tempsRestant == 0) {
 					if (!repondu) {
-						console.log('Okay');
-						reponseQuestions.push(reponseToPush != ['Pas de réponse'] ? reponseToPush : ['Pas de réponse']); // Ajout de la réponse à la liste
+						reponseQuestions.push(reponseToPush != ['Pas de réponse<<#'] ? reponseToPush : ['Pas de réponse<<#']); // Ajout de la réponse à la liste
 						if (results == 'instant') {
 							clearInterval(interval);
 							let divReponses = ``;
 							reponseToPush.forEach((reponseToPush) => {
 								for (i = 0; i < question.answer.length; i++) {
-									if (reponseToPush == question.answer[i]) {
+									if (reponseToPush.split('<<#')[0] == question.answer[i]) {
 										correctAnswerSound();
 									} else {
 										wrongAnswerSound();
 									}
 									divReponses += `
-								<div class="reponses background_${reponseToPush == question.answer[i]}">
-									<div class="reponse">Votre réponse: ${reponseToPush}</div>
+								<div class="reponses background_${reponseToPush.split('<<#')[0] == question.answer[i]}">
+									<div class="reponse">Votre réponse: ${reponseToPush.split('<<#')[0]}</div>
 									<div class="reponse">Réponse correcte: ${question.answer[i]}</div>
 								</div>`;
 								}
@@ -383,12 +375,12 @@ async function startGame(results, time, points) {
 				console.log('Question:', question);
 				for (i = 0; i < question.answer.length; i++) {
 					let pointPourLaQuestion = 0;
-					if (question.answer[i] != 'Pas de réponse') {
-						pointPourLaQuestion = parseInt(question.points[question.options.indexOf(question.answer[i])]);
+					if (question.answer[i].split('<<#')[0] != 'Pas de réponse') {
+						pointPourLaQuestion = parseInt(question.points[question.options.map((option) => option.split('<<#')[0]).indexOf(question.answer[i].split('<<#')[0])]);
 					}
 					console.log('Point pour la question:', pointPourLaQuestion);
 					reponses[index].forEach((reponse) => {
-						if (question.answer[i] == reponse) {
+						if (question.answer[i].split('<<#')[0] == reponse.split('<<#')[0]) {
 							score += pointPourLaQuestion; // Incrémentation du score si la réponse est correcte
 						}
 						maxPoints += pointPourLaQuestion;
@@ -397,7 +389,7 @@ async function startGame(results, time, points) {
 			} else {
 				for (i = 0; i < question.answer.length; i++) {
 					reponses[index].forEach((reponse) => {
-						if (question.answer[i] == reponse) {
+						if (question.answer[i].split('<<#')[0] == reponse.split('<<#')[0]) {
 							score++; // Incrémentation du score si la réponse est correcte
 						}
 						maxPoints++;
@@ -430,9 +422,9 @@ async function startGame(results, time, points) {
 					question.answer.forEach((answer, i) => {
 						reponses[index].forEach((reponse) => {
 							divReponses += `
-							<div class="reponses background_${reponse == answer}">
-								<div class="reponse">Points: ${question.points[question.options.indexOf(answer)]}</div>
-								<div class="reponse">Votre réponse: ${reponse}</div>
+							<div class="reponses background_${reponse.split('<<#')[0] == answer}">
+								<div class="reponse">Points: ${parseInt(question.points[question.options.map((option) => option.split('<<#')[0]).indexOf(answer)])}</div>
+								<div class="reponse">Votre réponse: ${reponse.split('<<#')[0]}</div>
 								<div class="reponse">Réponse correcte: ${answer}</div>
 							</div>`;
 						});
@@ -457,20 +449,24 @@ async function startGame(results, time, points) {
 	}
 
 	function registerScore(score, maxPoints, reponses) {
-		let reponsesList = [];
+		const reponsesList = [];
 		questionsMelange.forEach((question, index) => {
-			reponsesList.push(question.index + '_' + reponses[index]);
-		});
+			const id_question = question.index;
+			const choixUtilisateur = reponses[index];
 
-		reponsesList.sort((a, b) => {
-			return a.split('_')[0] - b.split('_')[0];
+			choixUtilisateur.forEach((reponse) => {
+				const id_choix = parseInt(reponse.split('<<#')[1]);
+				reponsesList.push({
+					id_question: id_question,
+					id_choix: id_choix,
+				});
+			});
 		});
-
 		const data = {
 			score: score,
 			score_on: maxPoints,
 			id_user: userID,
-			reponses: reponsesList.join(','),
+			reponses: reponsesList,
 		};
 
 		fetch(`../../api/questionnaires/${questionnaireID}/score`, {

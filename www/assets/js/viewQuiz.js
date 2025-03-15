@@ -42,32 +42,32 @@ function getQuestionnaires() {
 				data.forEach((quiz) => {
 					const questionnaire = document.createElement('div');
 					questionnaire.className = 'questionnaire';
-					questionnaire.dataset.id = quiz.questionnaire_id;
-					questionnaire.dataset.theme = quiz.theme_nom;
+					questionnaire.dataset.id = quiz.id;
+					questionnaire.dataset.theme = quiz.theme;
 					questionnaire.innerHTML = `
                     <div>
-                        <h3>${quiz.questionnaire_nom}</h3>
-                        <p>${quiz.theme_nom}</p>
+                        <h3>${quiz.nom}</h3>
+                        <p>${quiz.theme}</p>
                     </div>
-                    <p><span>${quiz.nombre_de_questions}</span> questions</p>
+                    <p><span>${quiz.nb_questions}</span> questions</p>
                     <div>
                     <a class="CTA_btn" id="seeQuestionnaire">Voir</a>
                     <a class="CTA_btn" id="seeAnswers">Voir scores</a>
                     </div>
                     
                 `;
-					if (!themeSelect.innerHTML.includes(quiz.theme_nom)) {
+					if (!themeSelect.innerHTML.includes(quiz.theme)) {
 						const option = document.createElement('option');
-						option.value = quiz.theme_nom;
-						option.innerHTML = quiz.theme_nom;
+						option.value = quiz.theme;
+						option.innerHTML = quiz.theme;
 						themeSelect.appendChild(option);
 					}
 
 					const seeAnswersBtn = questionnaire.querySelector('#seeAnswers');
-					seeAnswersBtn.onclick = () => seeAnswers(quiz.questionnaire_id);
+					seeAnswersBtn.onclick = () => seeAnswers(quiz.id);
 
 					const seeQuestionnaireBtn = questionnaire.querySelector('#seeQuestionnaire');
-					seeQuestionnaireBtn.onclick = () => seeQuestionnaire(quiz.questionnaire_id, quiz.questionnaire_nom);
+					seeQuestionnaireBtn.onclick = () => seeQuestionnaire(quiz.id, quiz.nom);
 					listeQuestionnaires.appendChild(questionnaire);
 				});
 			} else {
@@ -105,6 +105,7 @@ async function seeAnswers(idQuestionnaire) {
 					return null;
 				}
 			});
+		console.log(answers);
 		if (answers) {
 			const modal = document.createElement('div');
 			modal.id = 'answers_modal';
@@ -119,17 +120,16 @@ async function seeAnswers(idQuestionnaire) {
 			if (answers.length == 0) {
 				container.innerHTML += `
 				Vous n'avez pas participer à ce quiz.`;
-			}
-
-			if (userInfo.role == '1') {
-				container.innerHTML += `
+			} else {
+				if (userInfo.role == '1') {
+					container.innerHTML += `
 				<div id="select_div">
 					<select id="answers_select">
 						<option value="all">Tous</option>
 					</select>
 				<span>Moyenne du Groupe : <span id="groupe_moy"></span></span></div>`;
+				}
 			}
-
 			const closeBtn = document.createElement('button');
 			closeBtn.innerHTML = 'Fermer';
 			closeBtn.className = 'CTA_btn';
@@ -211,8 +211,6 @@ async function seeAnswers(idQuestionnaire) {
 
 			modal.append(container);
 			document.body.append(modal);
-		} else {
-			popUp('red', 5000, 'Erreur', 'Aucune réponse trouvée');
 		}
 	} else {
 		popUp('red', 5000, 'Erreur', 'Vous devez être connecté pour voir les réponses');
@@ -232,20 +230,7 @@ async function seeQuestionnaire(idQuestionnaire, nomQuestionnaire) {
 				return null;
 			}
 		});
-	loadingSpinner();
-	let types = await fetch(relativePath + '/api/questionnaires/types')
-		.then((response) => response.json())
-		.then((data) => {
-			removeLoadingSpinner();
-			if (data.success) {
-				return data.success;
-			} else {
-				popUp('red', 5000, 'Erreur', data.error);
-				return null;
-			}
-		});
-	console.log(types);
-	if (questionnaire) {
+	if (questionnaire.questions) {
 		const modal = document.createElement('div');
 		modal.id = 'questionnaire_modal';
 		modal.className = 'modalJavascript';
@@ -269,13 +254,13 @@ async function seeQuestionnaire(idQuestionnaire, nomQuestionnaire) {
 
 		container.append(playBtn);
 		container.append(closeBtn);
-		questionnaire.forEach((question, index) => {
+		questionnaire.questions.forEach((question, index) => {
 			const questionDiv = document.createElement('div');
 			questionDiv.className = 'questionDiv';
-			questionDiv.id = 'question_' + index;
+			questionDiv.id = 'question_' + question.id_question;
 			questionDiv.innerHTML = `
             <h3>${question.question}</h3>
-            <h3>Type : ${types.find((type) => type.id_type == question.type).nom}</h3>
+            <h3>Type : ${question.type}</h3>
             `;
 			container.append(questionDiv);
 		});
@@ -286,7 +271,6 @@ async function seeQuestionnaire(idQuestionnaire, nomQuestionnaire) {
 }
 
 async function seeAnswersUser(idQuestionnaire, reponsesUser) {
-	reponsesUser = reponsesUser.split(',');
 	loadingSpinner();
 	const questionnaire = await fetch(relativePath + '/api/questionnaires/' + idQuestionnaire)
 		.then((response) => response.json())
@@ -308,30 +292,64 @@ async function seeAnswersUser(idQuestionnaire, reponsesUser) {
 	<h2>Réponses</h2>
 	`;
 	console.log(reponsesUser);
-	questionnaire.forEach((question, index) => {
-		console.log(question);
+	console.log(questionnaire);
+	/* Structure questionnaire.questions
+	[
+    {
+        "id_question": 2,
+        "question": "Napoléon est mort en 1821.",
+        "type": "Vrai/Faux",
+        "id_creator": 1,
+        "choix": [
+            {
+                "id": 3,
+                "texte": "Vrai",
+                "est_reponse": 1,
+                "points": 1
+            },
+            {
+                "id": 4,
+                "texte": "Faux",
+                "est_reponse": 0,
+                "points": 1
+            }
+        ]
+    },
+	]
+	*/
+	questionnaire.questions.forEach((question, index) => {
 		const questionDiv = document.createElement('div');
 		questionDiv.className = 'modalQuestionDiv';
 
 		const questionTitle = document.createElement('h3');
-		const maxPointsPossible = question.points.split(',').reduce((acc, curr) => acc + parseInt(curr), 0);
-		questionTitle.innerText = 'Question  ' + (index + 1) + ' (' + maxPointsPossible + 'points' + ') : ' + question.question;
+		const maxPointsPossible = question.choix.reduce((acc, choix) => acc + choix.points, 0);
+		questionTitle.innerText = 'Question ' + (index + 1) + ' (' + maxPointsPossible + ' points) : ' + question.question;
 		questionDiv.appendChild(questionTitle);
 
+		// Réponses utilisateur pour cette question
+		const userReponses = reponsesUser.filter((reponse) => reponse.id_question == question.id_question);
+
 		const reponseUser = document.createElement('p');
-		reponseUser.innerText = 'Réponse Utilisateur : ' + reponsesUser[index].split('_')[1];
-		if (reponsesUser[index].split('_')[1] === question.reponses) {
+		reponseUser.innerText = 'Réponse Utilisateur : ' + userReponses.map((rep) => rep.choix).join(', ');
+
+		const bonneReponses = question.choix
+			.filter((choix) => choix.est_reponse == 1)
+			.map((choix) => choix.texte)
+			.join(', ');
+
+		// Toutes les réponses utilisateur sont correctes ?
+		const toutesBonnes = userReponses.every((rep) => question.choix.find((choix) => choix.id == rep.id_choix && choix.est_reponse == 1));
+
+		if (toutesBonnes) {
 			reponseUser.style.color = 'green';
 		} else {
 			reponseUser.style.color = 'red';
-		}
-		questionDiv.appendChild(reponseUser);
-		if (reponsesUser[index].split('_')[1] != question.reponses) {
 			const reponse = document.createElement('p');
-			reponse.innerText = 'Bonne réponse : ' + question.reponses;
+			reponse.innerText = 'Bonne réponse : ' + bonneReponses;
 			questionDiv.appendChild(reponse);
 		}
 
+		questionDiv.appendChild(reponseUser);
 		container.appendChild(questionDiv);
 	});
 

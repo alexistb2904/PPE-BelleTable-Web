@@ -22,7 +22,7 @@ class QuestionnaireController
         $idQuestionnaire = $args['id'] ?? null;
 
         if ($idQuestionnaire !== null) {
-            $result = \getQuestionForQuestionnaire($idQuestionnaire);
+            $result = \getQuestionnaire($idQuestionnaire);
             $response->getBody()->write($result);
         } else {
             $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));
@@ -64,11 +64,11 @@ class QuestionnaireController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function getAllScores(Request $request, Response $response, array $args): Response
+    public function getAllScoresForQuestionnaire(Request $request, Response $response, array $args): Response
     {
         $idQuestionnaire = $args['id'] ?? null;
         if ($idQuestionnaire !== null) {
-            $result = \getAllPreviousScoreForQuestionnaire($idQuestionnaire);
+            $result = \getAllScoresForQuestionnaire($idQuestionnaire);
             $response->getBody()->write($result);
         } else {
             $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));

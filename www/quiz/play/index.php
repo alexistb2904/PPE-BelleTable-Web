@@ -12,7 +12,7 @@ if (!isLogin()) {
 
 
 if ($_GET['id']) {
-    $questions = getQuestionForQuestionnaire(htmlspecialchars($_GET['id']));
+    $questions = getQuestionnaire(htmlspecialchars($_GET['id']));
     $previousScores = getScoreForQuestionnaire(htmlspecialchars($_GET['id']));
     $types = getAllTypeLibelle();
 } else {
@@ -37,8 +37,9 @@ function getLibelleType($id, $types)
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz n°<?php echo $_GET['id'] ?></title>
-    <link rel="stylesheet" href="<?php echo $relative_path ?>assets/css/base.css" />
     <link rel="stylesheet" href="<?php echo $relative_path ?>assets/css/styleJeu.css" />
+    <link rel="stylesheet" href="<?php echo $relative_path ?>assets/css/base.css" />
+
 </head>
 
 <body>

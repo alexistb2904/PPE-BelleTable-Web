@@ -7,9 +7,6 @@
 	"autoload": {
 		"psr-4": {
 			"App\\Controllers\\": "util/controllers/"
-		},
-		"files": [
-			"util/functions.php"
-		]
+		}
 	}
 }

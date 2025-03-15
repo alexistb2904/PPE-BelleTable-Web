@@ -61,7 +61,7 @@ class AuthController
         $required = ['email'];
 
         if (\checkParam($required, $param)) {
-            $result = resetPassword($param['email']);
+            $result = resetPassword(htmlspecialchars($param['email']));
 
             $response->getBody()->write($result);
         } else {
@@ -79,10 +79,10 @@ class AuthController
 
         if (\checkParam($required, $param)) {
             $result = \changePassword(
-                $param['email'],
-                $param['token'],
-                $param['password'],
-                $param['passwordConfirm']
+                htmlspecialchars($param['email']),
+                htmlspecialchars($param['token']),
+                htmlspecialchars($param['password']),
+                htmlspecialchars($param['passwordConfirm'])
             );
 
             $response->getBody()->write($result);

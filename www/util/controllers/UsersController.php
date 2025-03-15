@@ -39,7 +39,7 @@ class UsersController
         $required = ['username', 'email'];
 
         if ($idUser !== null && \checkParam($required, $param)) {
-            $result = \editUser($idUser, $param['username'], $param['email'], $param['password'] ?? null);
+            $result = \editUser($idUser, htmlspecialchars($param['username']), htmlspecialchars($param['email']), htmlspecialchars($param['password']) ?? null);
             $response->getBody()->write($result);
         } else {
             $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));

@@ -1,14 +1,37 @@
 PROJECT_NAME=quizDB
-PHP_SERVICE=php
+PHP_SERVICE=apache
 
 build:
 	docker-compose up -d --build
+	@echo ""
+	@echo "Build termine avec succes !"
+	@echo "Application :        http://localhost:8080"
+	@echo "phpMyAdmin :                  http://localhost:8081"
+	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
+	@echo ""
+
+start:
+	docker-compose up -d
+	@echo ""
+	@echo "Demarrage termine avec succes !"
+	@echo "Application :        http://localhost:8080"
+	@echo "phpMyAdmin :                  http://localhost:8081"
+	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
+	@echo ""
 
 stop:
 	docker-compose down
+	@echo ""
+	@echo "Arrêt termine avec succès !"
+	@echo ""
 
 restart:
 	docker-compose down && docker-compose up -d --build
+	@echo ""
+	@echo "Redemarrage termine avec succes !"
+	@echo "Application :        http://localhost:8080
+	@echo "phpMyAdmin :                  http://localhost:8081
+	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
 
 logs:
 	docker-compose logs -f
@@ -30,9 +53,6 @@ xdebug-off:
 
 db-reset:
 	docker-compose down -v && docker-compose up -d --build
-
-migrate:
-	docker-compose exec db mysql -uuser -ppassword mydb < /docker-entrypoint-initdb.d/init-db.sql
 
 open-mailpit:
 	open http://localhost:1080

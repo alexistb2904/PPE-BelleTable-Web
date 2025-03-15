@@ -21,7 +21,15 @@ RUN echo "zend_extension=xdebug.so" >> /usr/local/etc/php/conf.d/docker-php-ext-
  && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
  && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-WORKDIR /var/www/html
+ # Installer msmtp pour envoyer les mails
+RUN apt-get update && apt-get install -y msmtp msmtp-mta
 
-COPY ./www/composer.json /var/www/html/
-RUN composer install
+# Copier le fichier de conf msmtp
+COPY ./msmtprc /etc/msmtprc
+RUN chmod 600 /etc/msmtprc
+
+COPY ./php.ini /usr/local/etc/php/conf.d/php.ini
+
+WORKDIR /var/www/html
+COPY ./www/ /var/www/html/
+COPY ./msmtprc /var/www/.msmtprc

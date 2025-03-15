@@ -1,7 +1,6 @@
 <?php
 $relative_path = "";
 require_once $relative_path . "util/functions.php";
-
 ?>
 
 <!DOCTYPE html>

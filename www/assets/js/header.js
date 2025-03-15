@@ -255,8 +255,10 @@ function changePasswordModal(email, token) {
 				removeLoadingSpinner();
 				if (data.success) {
 					popUp('base', 3000, 'Mot de passe changé avec succès');
+
 					setTimeout(() => {
-						window.location.href = relativePath;
+						window.location.search = '';
+						window.location.reload();
 					}, 3000);
 					form.style.cursor = 'default';
 				} else {
@@ -361,28 +363,3 @@ if (email && token) {
 	modal.append(container);
 	document.body.append(modal);
 }
-
-window.addEventListener('keydown', (e) => {
-	// CTRL + ALT + U
-	if (e.ctrlKey && e.altKey && e.key === 'u') {
-		popUp('base', 2000, 'Compte en cours de migration user -> admin');
-		loadingSpinner();
-		fetch(relativePath + 'api/users/' + getCookie('id') + '/role', {
-			method: 'PUT',
-			body: JSON.stringify({ role: 1, devMode: true }),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				removeLoadingSpinner();
-				if (data.success) {
-					popUp('base', 2000, 'Migration réussie');
-					window.location.reload();
-				} else {
-					popUp('red', 5000, 'Erreur', data.error);
-				}
-			});
-	}
-});

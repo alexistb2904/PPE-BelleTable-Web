@@ -1,23 +1,24 @@
-version: '3.8'
-
 services:
-    php:
+    apache:
         build: .
         ports:
-            - '8000:80'
+            - '8080:80'
         volumes:
-            - ./src:/var/www/html
+            - ./www:/var/www/html
         depends_on:
-            - db
+            - mysql
+            - mailpit
 
-    db:
-        image: mysql:8.0
+    mysql:
+        image: mysql
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: mydb
             MYSQL_USER: user
             MYSQL_PASSWORD: password
+        ports:
+            - '3306:3306'
         volumes:
             - db-data:/var/lib/mysql
             - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -26,15 +27,17 @@ services:
         image: phpmyadmin/phpmyadmin
         restart: always
         ports:
-            - '8080:80'
+            - '8081:80'
         environment:
-            PMA_HOST: db
+            PMA_HOST: mysql
             MYSQL_ROOT_PASSWORD: root
 
-    mailcatcher:
-        image: schickling/mailcatcher
+    mailpit:
+        image: axllent/mailpit
+        restart: always
         ports:
-            - '1080:1080'
+            - '1080:8025' # Interface Web
+            - '1025:1025' # Port SMTP
 
 volumes:
     db-data:
