@@ -21,6 +21,7 @@ if (!isAdmin()) {
 <body>
     <?php include_once($relative_path . "util/components/header.php") ?>
     <main id="adminPage">
+        Nombre de réponses les 7 derniers jours :
         <div id="chartAnwser">
 
         </div>

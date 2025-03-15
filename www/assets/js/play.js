@@ -473,7 +473,7 @@ async function startGame(results, time, points) {
 			reponses: reponsesList.join(','),
 		};
 
-		fetch(`../../api/questionnaire/${questionnaireID}/score`, {
+		fetch(`../../api/questionnaires/${questionnaireID}/score`, {
 			method: 'POST',
 			body: JSON.stringify(data),
 			headers: {

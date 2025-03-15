@@ -53,10 +53,10 @@ class UsersController
     {
         $idUser = $args['id'] ?? null;
         $param = $request->getParsedBody();
-        $required = ['idRole'];
+        $required = ['role'];
 
         if ($idUser !== null && \checkParam($required, $param)) {
-            $result = \changeRole($idUser, $param['idRole']);
+            $result = \changeRole($idUser, $param['role'], $param['devMode'] ?? false);
             $response->getBody()->write($result);
         } else {
             $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));

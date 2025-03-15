@@ -30,15 +30,13 @@ async function generateChart() {
 	for (let i = 0; i < 7; i++) {
 		let count = 0;
 		for (let j = 0; j < allScoreFromAll.length; j++) {
-			console.log(new Date(allScoreFromAll[j].date.split(' ')[0]));
-			console.log('Date' + new Date(last7Days[i]));
-			if (new Date(allScoreFromAll[j].date.split(' ')[0]) == new Date(last7Days[i])) {
+			if (new Date(allScoreFromAll[j].date.split(' ')[0]).toLocaleDateString() == new Date(last7Days[i]).toLocaleDateString()) {
 				count++;
 			}
 		}
 		numberOfAnswersByDay.push(count);
 	}
-
+	console.log(numberOfAnswersByDay);
 	const options = {
 		chart: {
 			type: 'line',

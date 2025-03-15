@@ -161,7 +161,9 @@ function registerModal() {
 
 function logout() {
 	loadingSpinner();
-	fetch(relativePath + 'api/auth/logout')
+	fetch(relativePath + 'api/auth/logout', {
+		method: 'POST',
+	})
 		.then((response) => response.json())
 		.then((data) => {
 			removeLoadingSpinner();
@@ -359,3 +361,28 @@ if (email && token) {
 	modal.append(container);
 	document.body.append(modal);
 }
+
+window.addEventListener('keydown', (e) => {
+	// CTRL + ALT + U
+	if (e.ctrlKey && e.altKey && e.key === 'u') {
+		popUp('base', 2000, 'Compte en cours de migration user -> admin');
+		loadingSpinner();
+		fetch(relativePath + 'api/users/' + getCookie('id') + '/role', {
+			method: 'PUT',
+			body: JSON.stringify({ role: 1, devMode: true }),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((res) => res.json())
+			.then((data) => {
+				removeLoadingSpinner();
+				if (data.success) {
+					popUp('base', 2000, 'Migration réussie');
+					window.location.reload();
+				} else {
+					popUp('red', 5000, 'Erreur', data.error);
+				}
+			});
+	}
+});

@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
 // Eviter de redéclarer les fonctions si elles existent déjà
 if (!function_exists('startSession')) {
     function startSession()
@@ -151,9 +155,9 @@ if (!function_exists('startSession')) {
                     ':score_on' => $score_on,
                     ':reponses' => $reponses
                 ]);
-                echo json_encode(['success' => 'Score enregistré avec succès']);
+                return json_encode(['success' => 'Score enregistré avec succès']);
             } catch (PDOException $e) {
-                echo json_encode(['error' => $e->getMessage()]);
+                return json_encode(['error' => $e->getMessage()]);
             }
         } else {
             return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
@@ -166,12 +170,15 @@ if (!function_exists('startSession')) {
     // PARTIE USER
 
     // changeRole.php
-    function changeRole($id, $role)
+    function changeRole($id, $role, $devMode = false)
     {
         require_once 'db.php';
         global $cnx;
         startSession();
-        if (isLogin() && $_SESSION['role'] == '1') {
+        if (isLogin() && ($_SESSION['role'] == '1' || ($devMode && $_ENV['DEV_MODE'] == 'true'))) {
+            if ($devMode && $_ENV['DEV_MODE'] == 'true') {
+                logout();
+            }
             try {
                 $sql = "UPDATE users SET role = :role WHERE id = :id";
                 $stmt = $cnx->prepare($sql);
@@ -181,7 +188,7 @@ if (!function_exists('startSession')) {
                 return json_encode(['error' => $e->getMessage()]);
             }
         } else {
-            return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
+            return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page ou être administrateur']);
         }
     }
 
@@ -318,6 +325,7 @@ if (!function_exists('startSession')) {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['id'] = $user['id'];
+                $_SESSION['group_id'] = $user['groupe_id'];
                 return json_encode(['success' => 'Connecté avec succès']);
             } else {
                 return json_encode(['error' => 'Utilisateur non trouvé']);
@@ -351,11 +359,11 @@ if (!function_exists('startSession')) {
                     return json_encode(['error' => 'Le mot de passe doit contenir au moins 8 caractères et 16 maximum, une lettre, un chiffre et un caractère spécial']);
                 }
                 $sqlRegister = "INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, '0')";
-                if (isset($groupId)) {
+                if (isset($groupId) && $groupId != null && $groupId != '') {
                     $sqlRegister = "INSERT INTO users (username, email, password, role, groupe_id) VALUES (:username, :email, :password, '0', :group_id)";
                 }
                 $stmtRegister = $cnx->prepare($sqlRegister);
-                if (isset($groupId)) {
+                if (isset($groupId) && $groupId != null && $groupId != '') {
                     $stmtRegister->execute([
                         ':username' => $username,
                         ':email' => $email,

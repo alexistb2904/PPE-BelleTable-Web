@@ -1,5 +1,19 @@
 <?php
 require_once $relative_path . "util/functions.php";
+startSession();
+
+function setCookieAndSign($variableToSet)
+{
+    $cookieVar = $_SESSION[$variableToSet];
+    setcookie($variableToSet, $cookieVar, time() + 3600, '/');
+}
+
+if (isLogin()) {
+    setCookieAndSign('username');
+    setCookieAndSign('role');
+    setCookieAndSign('group_id');
+    setCookieAndSign('id');
+}
 
 ?>
 

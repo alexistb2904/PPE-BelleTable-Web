@@ -1,3 +1,9 @@
+function getCookie(name) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 /**
  * Affiche une fenêtre contextuelle avec un message personnalisé.
  * @param {string} type - Le type de la fenêtre contextuelle : base,red(par défaut: 'base').

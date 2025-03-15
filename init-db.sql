@@ -22,6 +22,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE DATABASE IF NOT EXISTS `questionnaire` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `questionnaire`;
 
 -- --------------------------------------------------------
 
@@ -38,7 +39,8 @@ CREATE TABLE `groupes` (
 --
 -- Déchargement des données de la table `groupes`
 --
-
+INSERT INTO `groupes` (`id`, `nom`, `date_creation`) VALUES
+(0, 'Aucun', '2025-01-23 20:47:56')
 -- --------------------------------------------------------
 
 --
@@ -170,9 +172,9 @@ CREATE TABLE `users` (
   `password` varchar(256) NOT NULL,
   `role` int(11) NOT NULL DEFAULT 0,
   `email` text NOT NULL,
-  `groupe_id` int(11) NOT NULL,
-  `token` text NOT NULL,
-  `token_expire` text NOT NULL
+  `groupe_id` int(11) NOT NULL DEFAULT 0,
+  `token` text NULL DEFAULT NULL,
+  `token_expire` text NULL DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
@@ -233,43 +235,43 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `groupes`
 --
 ALTER TABLE `groupes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `questionnaire`
 --
 ALTER TABLE `questionnaire`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `questions`
 --
 ALTER TABLE `questions`
-  MODIFY `id_question` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_question` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `scores`
 --
 ALTER TABLE `scores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `theme`
 --
 ALTER TABLE `theme`
-  MODIFY `id_theme` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_theme` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `types`
 --
 ALTER TABLE `types`
-  MODIFY `id_type` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_type` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
