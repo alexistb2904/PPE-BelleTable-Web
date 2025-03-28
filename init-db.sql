@@ -48,7 +48,7 @@ CREATE TABLE `groupes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `groupes` (`id`, `nom`, `date_creation`) VALUES
-(1, 'BTS SIO2', '2025-03-15 17:29:06');
+(1, 'BTS SIO2', NOW());
 
 CREATE TABLE `questionnaire` (
   `id` int NOT NULL,
@@ -59,10 +59,10 @@ CREATE TABLE `questionnaire` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `questionnaire` (`id`, `nom`, `theme`, `created_by`, `creation_date`) VALUES
-(1, 'Quiz Culture Générale', 1, 1, '2025-03-15 17:29:06'),
-(2, 'Quiz Informatique', 2, 1, '2025-03-15 17:29:06'),
-(3, 'Quiz Mathématiques', 3, 1, '2025-03-15 17:29:06'),
-(4, 'Vocabulaire Anglais', 4, 1, '2025-03-15 19:58:47');
+(1, 'Quiz Culture Générale', 1, 1, NOW()),
+(2, 'Quiz Informatique', 2, 1, NOW()),
+(3, 'Quiz Mathématiques', 3, 1, NOW()),
+(4, 'Vocabulaire Anglais', 4, 1, NOW());
 
 CREATE TABLE `questions` (
   `id_question` int NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE `scores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `scores` (`id`, `score`, `score_on`, `id_questionnaire`, `id_user`, `date`) VALUES
-(11, 3, 3, 1, 1, '2025-03-15 22:00:46');
+(11, 3, 3, 1, 1, NOW());
 
 CREATE TABLE `theme` (
   `id_theme` int NOT NULL,
