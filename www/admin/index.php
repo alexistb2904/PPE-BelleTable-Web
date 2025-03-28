@@ -21,10 +21,18 @@ if (!isAdmin()) {
 <body>
     <?php include_once($relative_path . "util/components/header.php") ?>
     <main id="adminPage">
-        Nombre de réponses les 7 derniers jours :
+        <span>Nombre de réponses les 7 derniers jours de <span id="quizName">tout les quiz</span> :</span>
+        <label>
+            Séléctionne un quiz:
+            <select id="quizSelect">
+                <option value="0">Choisissez un quiz</option>
+            </select>
+        </label>
         <div id="chartAnwser">
 
         </div>
+
+
     </main>
     <?php include_once($relative_path . "util/components/footer.php") ?>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

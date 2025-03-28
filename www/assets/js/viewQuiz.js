@@ -174,22 +174,24 @@ async function seeAnswers(idQuestionnaire) {
 						select.appendChild(option);
 					}
 				});
-				groupeMoy.innerHTML = calculMoyenne();
+				if (answers.length > 0) {
+					groupeMoy.innerHTML = calculMoyenne();
 
-				select.addEventListener('change', (e) => {
-					groupeMoy.innerHTML = calculMoyenne(select.value);
-					allAnswers.forEach((answer) => {
-						if (select.value == 'all') {
-							answer.style.display = 'flex';
-						} else {
-							if (answer.dataset.groupe_name == select.value) {
+					select.addEventListener('change', (e) => {
+						groupeMoy.innerHTML = calculMoyenne(select.value);
+						allAnswers.forEach((answer) => {
+							if (select.value == 'all') {
 								answer.style.display = 'flex';
 							} else {
-								answer.style.display = 'none';
+								if (answer.dataset.groupe_name == select.value) {
+									answer.style.display = 'flex';
+								} else {
+									answer.style.display = 'none';
+								}
 							}
-						}
+						});
 					});
-				});
+				}
 
 				function calculMoyenne(groupe = 'all') {
 					let moyenne = 0;
@@ -257,10 +259,12 @@ async function seeQuestionnaire(idQuestionnaire, nomQuestionnaire) {
 		questionnaire.questions.forEach((question, index) => {
 			const questionDiv = document.createElement('div');
 			questionDiv.className = 'questionDiv';
+			console.log(question);
 			questionDiv.id = 'question_' + question.id_question;
 			questionDiv.innerHTML = `
             <h3>${question.question}</h3>
             <h3>Type : ${question.type}</h3>
+			<h3>Points : ${question.choix.reduce((acc, choix) => acc + choix.points, 0)}</h3>
             `;
 			container.append(questionDiv);
 		});

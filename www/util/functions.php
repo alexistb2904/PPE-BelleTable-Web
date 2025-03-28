@@ -284,9 +284,10 @@ if (!function_exists('startSession')) {
 
         try {
             // 1. Récupération des scores + infos utilisateur/groupe/questionnaire
-            $sql = "SELECT scores.id as score_id, score, score_on, date, username, groupes.nom AS groupe_name, users.id as user_id, id_questionnaire
+            $sql = "SELECT scores.id as score_id, score, score_on, date, username, groupes.nom AS groupe_name, users.id as user_id, id_questionnaire, questionnaire.nom AS questionnaire_name
                 FROM scores
                 INNER JOIN users ON users.id = scores.id_user
+                INNER JOIN questionnaire ON questionnaire.id = scores.id_questionnaire
                 INNER JOIN groupes ON users.groupe_id = groupes.id";
             $stmt = $cnx->prepare($sql);
             $stmt->execute();
