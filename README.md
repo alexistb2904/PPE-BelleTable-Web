@@ -109,6 +109,7 @@ cp www/.env.example www/.env
 ```
 
 Modifiez-le avec vos informations personnelles (BDD, mot de passe, etc.).
+(Les informations de la base de données crée par Docker sont déjà renseigner mais libre à vous d'utiliser une autre base)
 
 ### 3. Lancer l’environnement
 
