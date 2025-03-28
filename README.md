@@ -1,4 +1,4 @@
-# QuizPHP
+# PPE BelleTable Web - BTS SIO
 
 Ce projet vous fournit un environnement de développement PHP complet utilisant Docker, avec :
 
