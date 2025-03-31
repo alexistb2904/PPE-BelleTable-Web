@@ -24,7 +24,8 @@ Ce projet vous fournit un environnement de développement PHP complet utilisant 
     -   ├── composer.json # Fichier des dépendances PHP
 -   docker-compose.yml # Configuration Docker
 -   Dockerfile # Configuration PHP/Apache
--   init-db.sql # Script SQL pour initier la base de données
+-   init-db-docker.sql # Script SQL pour initier la base de données en Docker
+-   init-db.sql # Script SQL pour initier la base de données en installation manuelle
 -   Makefile # Fichier avec des commandes utiles
 
 # ⚙️ Utilisation sans Docker
