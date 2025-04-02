@@ -1,5 +1,13 @@
 # PPE BelleTable Web - BTS SIO
 
+Identifiants de base : 
+-   Utilisateur Admin :
+        -   Identifiant : admin
+        -   Mot de passe : admin
+-   Utilisateur :
+        -   Identifiant : user
+        -   Mot de passe : user
+
 Ce projet vous fournit un environnement de développement PHP complet utilisant Docker, avec :
 
 -   ✅ PHP + Apache
