@@ -8,7 +8,7 @@ Identifiants de base :
         -   Identifiant : user
         -   Mot de passe : user
 
-Cahiers des charges : https://portfolio-alexistb2904.vercel.app/assets/PPE_DEsktop_CahierDesCharges.pdf
+Cahiers des charges : https://portfolio-alexistb2904.vercel.app/assets/PPE_Web_CahierDesCharges.pdf
 
 Ce projet vous fournit un environnement de développement PHP complet utilisant Docker, avec :
 
