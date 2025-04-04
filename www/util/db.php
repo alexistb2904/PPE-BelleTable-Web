@@ -2,12 +2,14 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
+$useAlternate = $_ENV['USEALTERNATE'] == 'true' ? true : false;
 
-$dbDatabase = $_ENV['USEALTERNATE'] ? $_ENV['ALT_DB_DATABASE'] : $_ENV['DB_DATABASE'];
-$dbHost = $_ENV['USEALTERNATE'] ? $_ENV['ALT_DB_HOST'] : $_ENV['DB_HOST'];
-$dbPort = $_ENV['USEALTERNATE'] ? $_ENV['ALT_DB_PORT'] : $_ENV['DB_PORT'];
-$dbUsername = $_ENV['USEALTERNATE'] ? $_ENV['ALT_DB_USERNAME'] : $_ENV['DB_USERNAME'];
-$dbPassword = $_ENV['USEALTERNATE'] ? $_ENV['ALT_DB_PASSWORD'] : $_ENV['DB_PASSWORD'];
+// Vérification de l'environnement
+$dbDatabase = $useAlternate ? $_ENV['ALT_DB_DATABASE'] : $_ENV['DB_DATABASE'];
+$dbHost = $useAlternate ? $_ENV['ALT_DB_HOST'] : $_ENV['DB_HOST'];
+$dbPort = $useAlternate ? $_ENV['ALT_DB_PORT'] : $_ENV['DB_PORT'];
+$dbUsername = $useAlternate ? $_ENV['ALT_DB_USERNAME'] : $_ENV['DB_USERNAME'];
+$dbPassword = $useAlternate ? $_ENV['ALT_DB_PASSWORD'] : $_ENV['DB_PASSWORD'];
 //connexion à la base de données
 $dsn = 'mysql:dbname=' . $dbDatabase . ';host=' . $dbHost . ';port=' . $dbPort;
 
