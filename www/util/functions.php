@@ -750,7 +750,7 @@ if (!function_exists('startSession')) {
 
 
             // RETURN DEBUG
-            return json_encode(['success' => 'Token envoyé avec succès', 'token' => $token, 'email' => $email]);
+            return json_encode(['success' => 'Token envoyé avec succès']);
 
             // RETURN PROD
             // return json_encode(['success' => 'Token envoyé avec succès']);

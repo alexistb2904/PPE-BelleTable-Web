@@ -326,7 +326,6 @@ function forgotPasswordModal() {
 				removeLoadingSpinner();
 				if (data.success) {
 					popUp('base', 5000, 'Email envoyé avec succès !');
-					popUp('base', 10000, 'Lien Debug', window.location.origin + window.location.pathname + '?email=' + data.email + '&token=' + data.token);
 					form.style.cursor = 'default';
 				} else {
 					popUp('red', 5000, 'Erreur', data.error);
