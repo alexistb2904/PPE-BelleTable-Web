@@ -8,6 +8,8 @@ Identifiants de base :
         -   Identifiant : user
         -   Mot de passe : user
 
+Fiche Professionnelle : https://portfolio-alexistb2904.vercel.app/epreuveE6#PPEWEB
+
 Cahiers des charges : https://portfolio-alexistb2904.vercel.app/assets/PPE_Web_CahierDesCharges.pdf
 
 Ce projet vous fournit un environnement de développement PHP complet utilisant Docker, avec :
