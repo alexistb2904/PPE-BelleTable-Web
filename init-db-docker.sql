@@ -289,7 +289,7 @@ ALTER TABLE `users`
 
 ALTER TABLE `questionnaire`
   ADD CONSTRAINT `questionnaire_ibfk_1` FOREIGN KEY (`theme`) REFERENCES `theme` (`id_theme`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `questionnaire_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `questionnaire_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`id_questionnaire`) REFERENCES `questionnaire` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
@@ -303,7 +303,7 @@ ALTER TABLE `reponses_utilisateur`
 
 ALTER TABLE `scores`
   ADD CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`id_questionnaire`) REFERENCES `questionnaire` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'password123';
 GRANT ALL PRIVILEGES ON quizdb.* TO 'appuser'@'%';

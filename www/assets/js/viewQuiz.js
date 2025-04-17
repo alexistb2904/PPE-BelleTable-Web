@@ -44,6 +44,7 @@ function getQuestionnaires() {
 					questionnaire.className = 'questionnaire';
 					questionnaire.dataset.id = quiz.id;
 					questionnaire.dataset.theme = quiz.theme;
+					// Ajout du bouton "Voir Progression"
 					questionnaire.innerHTML = `
                     <div>
                         <h3>${quiz.nom}</h3>
@@ -51,10 +52,10 @@ function getQuestionnaires() {
                     </div>
                     <p><span>${quiz.nb_questions}</span> questions</p>
                     <div>
-                    <a class="CTA_btn" id="seeQuestionnaire">Voir</a>
-                    <a class="CTA_btn" id="seeAnswers">Voir scores</a>
+                        <a class="CTA_btn" id="seeQuestionnaire">Voir</a>
+                        <a class="CTA_btn" id="seeAnswers">Voir scores</a>
+                        <a class="CTA_btn" id="seeProgression">Voir Progression</a>
                     </div>
-                    
                 `;
 					if (!themeSelect.innerHTML.includes(quiz.theme)) {
 						const option = document.createElement('option');
@@ -68,6 +69,11 @@ function getQuestionnaires() {
 
 					const seeQuestionnaireBtn = questionnaire.querySelector('#seeQuestionnaire');
 					seeQuestionnaireBtn.onclick = () => seeQuestionnaire(quiz.id, quiz.nom);
+
+					// Ajout de l'événement pour le nouveau bouton
+					const seeProgressionBtn = questionnaire.querySelector('#seeProgression');
+					seeProgressionBtn.onclick = () => showProgressionGraph(quiz.id, quiz.nom); // On passe l'ID et le nom
+
 					listeQuestionnaires.appendChild(questionnaire);
 				});
 			} else {
@@ -77,6 +83,179 @@ function getQuestionnaires() {
 }
 
 getQuestionnaires();
+
+async function showProgressionGraph(idQuestionnaire, nomQuestionnaire) {
+	loadingSpinner();
+	try {
+		// 1. Récupérer les scores personnels
+		const personalScoresData = await fetch(relativePath + `/api/questionnaires/${idQuestionnaire}/score/me`).then((res) => res.json());
+		if (!personalScoresData.success && personalScoresData.success.length === 0) {
+			popUp('yellow', 5000, 'Info', "Vous n'avez pas encore participé à ce quiz.");
+			removeLoadingSpinner();
+			return;
+		}
+		const personalScores = personalScoresData.success.sort((a, b) => new Date(a.date) - new Date(b.date)); // Trier par date
+
+		// 2. Récupérer tous les scores pour calculer la moyenne du groupe
+		const allScoresData = await fetch(relativePath + `/api/questionnaires/${idQuestionnaire}/score`).then((res) => res.json());
+		if (!allScoresData.success) {
+			throw new Error(allScoresData.error || 'Erreur lors de la récupération des scores.');
+		}
+		const allScores = allScoresData.success;
+
+		// 3. Filtrer les scores du groupe et calculer la moyenne par date
+		const groupScores = allScores.filter((score) => score.groupe_name === userGroupName);
+		const groupAverageByDate = {}; // { 'YYYY-MM-DD': { totalScore: X, totalMax: Y, count: Z } }
+
+		groupScores.forEach((score) => {
+			const date = score.date.split(' ')[0]; // Garder seulement la date YYYY-MM-DD
+			if (!groupAverageByDate[date]) {
+				groupAverageByDate[date] = { totalScore: 0, totalMax: 0, count: 0 };
+			}
+			// Assurer que score et score_on sont des nombres
+			const currentScore = parseFloat(score.score) || 0;
+			const currentMaxScore = parseFloat(score.score_on) || 1; // Eviter division par zéro
+
+			groupAverageByDate[date].totalScore += currentScore;
+			groupAverageByDate[date].totalMax += currentMaxScore;
+			groupAverageByDate[date].count++;
+		});
+
+		const sortedDates = Object.keys(groupAverageByDate).sort((a, b) => new Date(a) - new Date(b));
+
+		const groupProgression = sortedDates.map((date) => {
+			const data = groupAverageByDate[date];
+			const averageScore = data.count > 0 ? data.totalScore / data.count : 0;
+			const averageMax = data.count > 0 ? data.totalMax / data.count : 1;
+			return {
+				x: new Date(date).getTime(), // Timestamp pour ApexCharts
+				y: averageMax > 0 ? ((averageScore / averageMax) * 100).toFixed(2) : 0, // Pourcentage
+			};
+		});
+
+		// 4. Préparer les données pour le graphique personnel
+		const personalProgression = personalScores.map((score, index) => ({
+			x: new Date(score.date).getTime(), // Utiliser la date comme catégorie x
+			y: score.score_on > 0 ? ((score.score / score.score_on) * 100).toFixed(2) : 0, // Pourcentage
+		}));
+
+		removeLoadingSpinner();
+
+		// 5. Créer et afficher la modale avec le graphique
+		createGraphModal(nomQuestionnaire, personalProgression, groupProgression);
+	} catch (error) {
+		removeLoadingSpinner();
+		console.error('Erreur lors de la récupération ou du traitement des scores:', error);
+		popUp('red', 5000, 'Erreur', `Impossible d'afficher la progression: ${error.message}`);
+	}
+}
+
+function createGraphModal(title, personalData, groupData) {
+	// Supprimer une modale existante
+	const existingModal = document.getElementById('progressionGraphModal');
+	if (existingModal) {
+		existingModal.remove();
+	}
+
+	const modal = document.createElement('div');
+	modal.id = 'progressionGraphModal';
+	modal.className = 'graph-modal'; // Appliquer le style CSS
+
+	const modalContent = document.createElement('div');
+	modalContent.className = 'graph-modal-content';
+
+	const closeBtn = document.createElement('span');
+	closeBtn.className = 'graph-modal-close';
+	closeBtn.innerHTML = '&times;';
+	closeBtn.onclick = () => modal.remove();
+
+	const chartTitle = document.createElement('h2');
+	chartTitle.textContent = `Progression pour: ${title}`;
+
+	const chartDiv = document.createElement('div');
+	chartDiv.id = 'progressionChart'; // ID pour ApexCharts
+
+	modalContent.appendChild(closeBtn);
+	modalContent.appendChild(chartTitle);
+	modalContent.appendChild(chartDiv);
+	modal.appendChild(modalContent);
+	document.body.appendChild(modal);
+
+	// Configuration ApexCharts
+	const options = {
+		series: [
+			{
+				name: 'Mon Score (%)',
+				data: personalData,
+			},
+			{
+				name: `Moyenne Groupe ${userGroupName} (%)`,
+				data: groupData,
+			},
+		],
+		chart: {
+			height: 350,
+			type: 'line',
+			zoom: {
+				enabled: true,
+			},
+			toolbar: {
+				show: true,
+			},
+		},
+		dataLabels: {
+			enabled: false,
+		},
+		stroke: {
+			curve: 'smooth', // ou 'straight'
+			width: [3, 2], // Epaisseur différente pour les lignes
+		},
+		title: {
+			text: 'Progression des Scores',
+			align: 'left',
+		},
+		markers: {
+			size: [5, 3], // Taille différente pour les points
+		},
+		xaxis: {
+			type: 'datetime', // Utiliser le type datetime pour les timestamps
+			labels: {
+				datetimeUTC: false, // Afficher en heure locale
+				format: 'dd MMM yy HH:mm', // Format de date
+			},
+			title: {
+				text: 'Date de Participation',
+			},
+		},
+		yaxis: {
+			title: {
+				text: 'Score (%)',
+			},
+			min: 0,
+			max: 100, // Le score est en pourcentage
+		},
+		tooltip: {
+			x: {
+				format: 'dd MMM yyyy HH:mm', // Format de date dans le tooltip
+			},
+			y: {
+				formatter: function (val) {
+					return val + '%';
+				},
+			},
+		},
+		legend: {
+			position: 'top',
+			horizontalAlign: 'right',
+			floating: true,
+			offsetY: -25,
+			offsetX: -5,
+		},
+	};
+
+	const chart = new ApexCharts(chartDiv, options);
+	chart.render();
+}
 
 async function seeAnswers(idQuestionnaire) {
 	loadingSpinner();

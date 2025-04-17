@@ -510,6 +510,9 @@ if (!function_exists('startSession')) {
             if ($devMode) {
                 logout();
             }
+            if ($_SESSION['id'] == $id) {
+                return json_encode(['error' => 'Vous ne pouvez pas changer votre propre rôle']);
+            }
             try {
                 $sql = "UPDATE users SET role = :role WHERE id = :id";
                 $stmt = $cnx->prepare($sql);
@@ -759,6 +762,27 @@ if (!function_exists('startSession')) {
         }
     }
 
+    // deleteUser.php
+
+    function deleteUser($id)
+    {
+        require_once 'db.php';
+        global $cnx;
+        startSession();
+        if (isLogin() && ($_SESSION['role'] == '1')) {
+            try {
+                $sql = "DELETE FROM users WHERE id = :id";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':id' => $id]);
+                return json_encode(['success' => 'Utilisateur supprimé avec succès']);
+            } catch (PDOException $e) {
+                return json_encode(['error' => $e->getMessage()]);
+            }
+        } else {
+            return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
+        }
+    }
+
     // checkToken.php
     function checkTokenValidity($email, $token)
     {
@@ -848,7 +872,7 @@ if (!function_exists('startSession')) {
         startSession();
         if (isset($_SESSION['username']) && isset($_SESSION['role']) && $_SESSION['role'] == '1') {
             try {
-                $sql = "UPDATE users SET groupe_id = NULL WHERE id = :user_id AND groupe_id = :group_id";
+                $sql = "UPDATE users SET groupe_id = 0 WHERE id = :user_id AND groupe_id = :group_id";
                 $stmt = $cnx->prepare($sql);
                 $stmt->execute([':user_id' => $user_id, ':group_id' => $group_id]);
                 return json_encode(['success' => 'Utilisateur retiré du groupe avec succès']);

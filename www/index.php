@@ -9,6 +9,10 @@ require_once $relative_path . "util/functions.php";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TheQuiz - Testez vos connaissances avec nos quiz interactifs.">
+    <meta name="keywords" content="quiz, test, connaissances, interactif">
+    <meta name="author" content="alexistb2904">
+    <link rel="icon" href="assets/img/quizIcon.png" type="image/png">
     <title>Quiz</title>
     <link rel="stylesheet" href="assets/css/base.css">
 </head>

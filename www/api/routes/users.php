@@ -11,6 +11,7 @@ $app->group('/users', function ($group) use ($usersController) {
     $group->get('/me', [$usersController, 'get']);
     $group->get('/{id:[0-9]+}', [$usersController, 'get']);
     $group->put('/{id:[0-9]+}', [$usersController, 'edit']);
+    $group->delete('/{id:[0-9]+}', [$usersController, 'delete']);
     $group->put('/{id:[0-9]+}/role', [$usersController, 'changeRole']);
 });
 

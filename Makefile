@@ -7,7 +7,7 @@ build:
 	@echo "Build termine avec succes !"
 	@echo "Application :        http://localhost:8080"
 	@echo "phpMyAdmin :                  http://localhost:8081"
-	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
+	@echo "Mailpit (boîte mail locale) : http://localhost:1080"
 	@echo ""
 
 start:
@@ -16,7 +16,7 @@ start:
 	@echo "Demarrage termine avec succes !"
 	@echo "Application :        http://localhost:8080"
 	@echo "phpMyAdmin :                  http://localhost:8081"
-	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
+	@echo "Mailpit (boîte mail locale) : http://localhost:1080"
 	@echo ""
 
 stop:
@@ -31,7 +31,7 @@ restart:
 	@echo "Redemarrage termine avec succes !"
 	@echo "Application :        http://localhost:8080
 	@echo "phpMyAdmin :                  http://localhost:8081
-	@echo "Mailpit (boîte mail locale) : http://localhost:8025"
+	@echo "Mailpit (boîte mail locale) : http://localhost:1080"
 
 logs:
 	docker-compose logs -f

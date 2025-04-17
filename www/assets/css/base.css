@@ -19,7 +19,7 @@ body {
 	justify-content: flex-start;
 	align-items: center;
 	flex-direction: column;
-	height: 100vh;
+	min-height: 100vh;
 	position: relative;
 	--backgroundColor: #1b1b1b;
 	--backgroundColorLight: #212121;
@@ -395,9 +395,150 @@ main#adminPage {
 	flex-direction: column;
 }
 
+main#adminPage .userList,
+main#adminPage .groupList {
+	width: 80%;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 1vh;
+}
+
+main#adminPage .userList select {
+	width: 100%;
+	padding: var(--padding);
+	border-radius: var(--inRadius);
+}
+
+main#adminPage table {
+	width: 100%;
+	border-collapse: collapse;
+	border-radius: var(--outRadius);
+	background: var(--backgroundColorLight);
+	overflow: hidden;
+	margin-bottom: 1rem;
+}
+
+main#adminPage table thead th {
+	background-color: var(--primary);
+	color: var(--onPrimary);
+	padding: var(--padding);
+	text-align: left;
+	font-weight: bold;
+}
+
+main#adminPage table tbody tr {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+main#adminPage table tbody tr:last-child {
+	border-bottom: none;
+}
+
+main#adminPage table tbody tr:hover {
+	background: var(--primaryLight);
+	transition: background-color 0.2s ease;
+}
+
+main#adminPage table th,
+main#adminPage table td {
+	padding: 12px 15px;
+	text-align: left;
+}
+
+main#adminPage table th:not(:last-child),
+main#adminPage table td:not(:last-child) {
+	border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+main#adminPage table td span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+main#adminPage .actionButton {
+	width: 100%;
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	background-color: transparent;
+	border: var(--onPrimary) solid 1px;
+	padding: 5%;
+	border-radius: var(--inRadius);
+	color: var(--onPrimary);
+	cursor: pointer;
+	align-items: center;
+}
+
+main#adminPage #groupList .actionButton {
+	padding: 2%;
+}
+main#adminPage #addGroup .actionButton {
+	padding: 1%;
+	width: 40%;
+}
+
+main#adminPage .actionButton:hover {
+	background-color: var(--onPrimary);
+	color: var(--backgroundColor);
+	transition: background-color 0.2s ease;
+}
+
+main#adminPage #addGroup {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-around;
+	background-color: var(--backgroundColorLight);
+	padding: 1%;
+	margin-bottom: 1%;
+	border-radius: var(--inRadius);
+	color: var(--onPrimary);
+	cursor: pointer;
+}
+
+main#adminPage #addGroup label {
+	display: flex;
+	flex-direction: column;
+	width: 80%;
+}
+
+main#adminPage #addGroup label input {
+	border-radius: var(--inRadius);
+	border: 1px solid var(--primary);
+	padding: var(--padding);
+}
+
+main#adminPage .chartContainer {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	gap: 2%;
+	justify-content: center;
+	padding: 1% 0;
+}
+
+main#adminPage .chartContainer .chart1,
+main#adminPage .chartContainer .chart2 {
+	padding: 2% 1%;
+	border-radius: var(--outRadius);
+
+	background: var(--backgroundColorLight);
+	display: flex;
+	width: 37%;
+	flex-direction: column;
+}
+
+@media (max-width: 768px) {
+	main#adminPage .userList,
+	main#adminPage .groupList {
+		width: 95%;
+	}
+}
+
 /* apexcharts */
 
 #chartAnwser {
-	width: 50%;
+	width: 100%;
 	color: var(--primary) !important;
 }

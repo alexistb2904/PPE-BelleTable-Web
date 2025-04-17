@@ -7,10 +7,8 @@ if (isLogin()) {
     setCookieFunc('group_id');
     setCookieFunc('id');
 }
-
-
-
 ?>
+
 
 <header>
     <nav>

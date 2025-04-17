@@ -65,4 +65,20 @@ class UsersController
 
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        $idUser = $args['id'] ?? null;
+        $param = $request->getParsedBody();
+
+        if ($idUser !== null) {
+            $result = \deleteUser($idUser);
+            $response->getBody()->write($result);
+        } else {
+            $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));
+            return $response->withStatus(400);
+        }
+
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }

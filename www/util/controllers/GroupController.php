@@ -77,7 +77,7 @@ class GroupController
         $required = ['idUser'];
 
         if ($idGroup !== null && \checkParam($required, $param)) {
-            $result = \addUserToGroup($idGroup, $param['idUser']);
+            $result = \addUserToGroup($param['idUser'], $idGroup);
             $response->getBody()->write($result);
         } else {
             $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));
