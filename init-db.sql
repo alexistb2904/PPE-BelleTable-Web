@@ -205,7 +205,10 @@ CREATE TABLE `users` (
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `groupe_id` int NOT NULL DEFAULT '0',
   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `token_expire` datetime DEFAULT NULL
+  `token_expire` datetime DEFAULT NULL,
+  `locked` VARCHAR(255) DEFAULT NULL,
+  `try_count` int NOT NULL DEFAULT '0',
+  `password_last_change` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`, `email`, `groupe_id`, `token`, `token_expire`) VALUES
@@ -217,7 +220,14 @@ INSERT INTO `users` (`id`, `username`, `password`, `role`, `email`, `groupe_id`,
 (6, 'pierre', '71e9a4e599d6f1c512d3595b1523f7f8a3f74b3c14966bab18e9887c5f43b42d', 0, 'pierre@example.com', 3, NULL, NULL),
 (7, 'julie', 'c76c7f5aae1bcf2e10c609a27c4c067c4174d84d580bddca4e0afa30e9c5bc2d', 0, 'julie@example.com', 3, NULL, NULL);
 
-
+CREATE TABLE `feedback` (
+    `id` int NOT NULL,
+    `id_questionnaire` int NOT NULL,
+    `id_user` int NOT NULL,
+    `rating` int NOT NULL,
+    `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `comment_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
 
 ALTER TABLE `choix`
   ADD PRIMARY KEY (`id`),
@@ -258,6 +268,10 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD KEY `groupe_id` (`groupe_id`);
 
+ALTER TABLE `feedback`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_questionnaire` (`id_questionnaire`),
+  ADD KEY `id_user` (`id_user`);
 
 ALTER TABLE `choix`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
@@ -286,6 +300,8 @@ ALTER TABLE `types`
 ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
+ALTER TABLE `feedback`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 ALTER TABLE `questionnaire`
   ADD CONSTRAINT `questionnaire_ibfk_1` FOREIGN KEY (`theme`) REFERENCES `theme` (`id_theme`) ON DELETE RESTRICT ON UPDATE RESTRICT,
@@ -304,6 +320,10 @@ ALTER TABLE `reponses_utilisateur`
 ALTER TABLE `scores`
   ADD CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`id_questionnaire`) REFERENCES `questionnaire` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `feedback`
+  ADD FOREIGN KEY (`id_questionnaire`) REFERENCES `questionnaire`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+ALTER TABLE `feedback`
+  ADD FOREIGN KEY (`id_user`) REFERENCES `users`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -13,6 +13,7 @@ $app->group('/users', function ($group) use ($usersController) {
     $group->put('/{id:[0-9]+}', [$usersController, 'edit']);
     $group->delete('/{id:[0-9]+}', [$usersController, 'delete']);
     $group->put('/{id:[0-9]+}/role', [$usersController, 'changeRole']);
+    $group->get('/{id:[0-9]+}/scores', [$usersController, 'getAllScoresForUser']);
 });
 
 $app->group('/auth', function ($group) use ($authController) {

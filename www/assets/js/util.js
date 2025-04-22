@@ -110,10 +110,22 @@ function loadingSpinner() {
 	<div></div>
 	`;
 	spinnerContainer.appendChild(spinner);
-	document.body.appendChild(spinnerContainer);
+	if (!document.querySelector('.spinner-container')) {
+		document.body.appendChild(spinnerContainer);
+	} else {
+		document.querySelector('.spinner-container').classList.add(Math.random().toString(36).substring(7));
+	}
 }
 
 function removeLoadingSpinner() {
 	const spinner = document.querySelector('.spinner-container');
-	spinner.remove();
+	if (spinner) {
+		const allSpinnerClass = spinner.classList;
+
+		if (allSpinnerClass.length > 1) {
+			spinner.classList.remove(allSpinnerClass[1]);
+		} else {
+			spinner.remove();
+		}
+	}
 }

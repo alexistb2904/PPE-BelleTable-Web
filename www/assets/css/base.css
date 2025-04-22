@@ -19,6 +19,7 @@ body {
 	justify-content: flex-start;
 	align-items: center;
 	flex-direction: column;
+	height: 100vh;
 	min-height: 100vh;
 	position: relative;
 	--backgroundColor: #1b1b1b;
@@ -277,6 +278,7 @@ main#home {
 	flex-direction: column;
 	width: 50%;
 	background: white;
+	color: var(--backgroundColor);
 	padding: var(--padding);
 	border-radius: var(--outRadius);
 	gap: 1vh;
@@ -292,6 +294,25 @@ main#home {
 	border-radius: var(--inRadius);
 	border: 1px solid var(--primary);
 	padding: var(--padding);
+}
+
+.containerJavascript form .rgpdContainer {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 1vh;
+}
+
+.containerJavascript form .rgpdContainer input {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+.containerJavascript form .rgpdContainer label {
+	width: 100%;
+	color: var(--backgroundColor);
+	text-align: left;
 }
 
 main#profil {
@@ -375,6 +396,15 @@ main#quiz ~ #answers_modal .containerJavascript .questionDiv {
 	border-radius: var(--inRadius);
 }
 
+.feedbackDiv {
+	display: flex;
+	flex-direction: column;
+	padding: var(--padding);
+	justify-content: space-between;
+	border: 1px solid var(--primary);
+	border-radius: var(--inRadius);
+}
+
 .forgotPassword {
 	display: flex;
 	flex-direction: column;
@@ -442,7 +472,7 @@ main#adminPage table tbody tr:hover {
 
 main#adminPage table th,
 main#adminPage table td {
-	padding: 12px 15px;
+	padding: 12px 5px;
 	text-align: left;
 }
 
@@ -527,6 +557,110 @@ main#adminPage .chartContainer .chart2 {
 	display: flex;
 	width: 37%;
 	flex-direction: column;
+}
+
+main#adminPage .chartContainer .chart2 #chartScore {
+	color: var(--backgroundColor);
+}
+.modalJavascriptAddUser .containerJavascript {
+	background-color: var(--backgroundColorLight);
+}
+
+main#feedback {
+	width: 100%;
+	height: 50vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+main#feedback .stars {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+	flex-direction: row-reverse;
+}
+
+main#feedback .stars input {
+	display: none;
+}
+
+main#feedback .stars label {
+	width: 2rem;
+	height: 2rem;
+	font-size: 2rem;
+	background-color: var(--backgroundColorLight);
+	border-radius: var(--inRadius);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+}
+
+main#feedback .stars input:checked ~ label,
+main#feedback .stars label:hover,
+main#feedback .stars label:hover ~ label {
+	color: #ffd700;
+	animation: starAnimation 0.25s ease-in-out;
+}
+
+@keyframes starAnimation {
+	0% {
+		transform: scale(1) translateY(0);
+	}
+
+	50% {
+		transform: scale(1.05) translateY(-1vh);
+	}
+
+	100% {
+		transform: scale(1) translateY(0);
+	}
+}
+
+main#feedback #feedbackForm {
+	display: flex;
+	flex-direction: column;
+	width: 50%;
+	padding: var(--padding);
+	border-radius: var(--outRadius);
+	gap: 1vh;
+}
+
+main#feedback #feedbackForm textarea {
+	border-radius: var(--inRadius);
+	border: 1px solid var(--primary);
+	padding: var(--padding);
+	resize: none;
+}
+
+main#feedback #feedbackForm textarea:focus {
+	outline: none;
+}
+
+main#feedback #feedbackForm textarea::placeholder {
+	color: var(--backgroundColor);
+}
+
+main#feedback #feedbackForm textarea:focus::placeholder {
+	color: var(--primary);
+}
+
+main#feedback #feedbackForm button {
+	text-align: center;
+	padding: var(--padding) calc(2 * var(--padding));
+	background-color: var(--primary);
+	border: none;
+	color: var(--onPrimary);
+	border-radius: var(--inRadius);
+	transition: 0.25s;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 @media (max-width: 768px) {

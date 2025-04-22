@@ -91,4 +91,21 @@ class QuestionnaireController
         $response->getBody()->write($result);
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function registerFeedback(Request $request, Response $response, array $args): Response
+    {
+        $idQuestionnaire = $args['id'] ?? null;
+        $param = $request->getParsedBody();
+        $required = ['rating'];
+
+        if ($idQuestionnaire !== null && \checkParam($required, $param)) {
+            $result = \registerFeedback($idQuestionnaire, $param['rating'], $param['comment'] ?? null);
+            $response->getBody()->write($result);
+        } else {
+            $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));
+            return $response->withStatus(400);
+        }
+
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }

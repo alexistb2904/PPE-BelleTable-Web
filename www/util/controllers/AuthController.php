@@ -20,7 +20,8 @@ class AuthController
                 $param['username'],
                 $param['email'],
                 $param['password'],
-                $param['groupID'] ?? null
+                $param['groupID'] ?? null,
+                $param['creationAdmin'] ?? null
             );
 
             $response->getBody()->write($result);

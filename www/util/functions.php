@@ -106,6 +106,22 @@ if (!function_exists('startSession')) {
             // Regrouper les données
             $questionnaire['questions'] = $questions;
 
+            // Récupérer les feedbacks
+            $sql = "
+            SELECT 
+                f.rating,
+                f.comment,
+                u.username
+            FROM feedback f
+            JOIN users u ON f.id_user = u.id
+            WHERE f.id_questionnaire = :id
+        ";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $feedbacks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $questionnaire['feedbacks'] = $feedbacks;
+
             return json_encode(['success' => $questionnaire]);
         } catch (PDOException $e) {
             return json_encode(['error' => $e->getMessage()]);
@@ -371,7 +387,7 @@ if (!function_exists('startSession')) {
             g.nom AS groupe_name
         FROM scores s
         INNER JOIN users u ON u.id = s.id_user
-        INNER JOIN groupes g ON u.groupe_id = g.id
+        LEFT JOIN groupes g ON u.groupe_id = g.id
         WHERE s.id_questionnaire = :id_questionnaire
         AND s.id_user = :id_user
         ";
@@ -381,7 +397,6 @@ if (!function_exists('startSession')) {
                 ':id_user' => $_SESSION['id']
             ]);
             $scoreData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             if (!$scoreData) {
                 return json_encode(['success' => []]);
             }
@@ -495,6 +510,52 @@ if (!function_exists('startSession')) {
     }
 
 
+    function registerFeedback($id_questionnaire, $rating, $comment = null)
+    {
+        require_once 'db.php';
+        global $cnx;
+        startSession();
+        if (!isLogin()) {
+            return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
+        }
+        // Vérifier si l'utilisateur a déjà donné un feedback pour ce questionnaire ou si il n'as pas joué au questionnaire
+
+        $checkFeedback = "SELECT * FROM feedback WHERE id_questionnaire = :id_questionnaire AND id_user = :id_user";
+        $checkScore = "SELECT * FROM scores WHERE id_questionnaire = :id_questionnaire AND id_user = :id_user";
+
+        try {
+            $stmt = $cnx->prepare($checkFeedback);
+            $stmt->execute([':id_questionnaire' => $id_questionnaire, ':id_user' => $_SESSION['id']]);
+            $feedback = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($feedback) {
+                return json_encode(['error' => 'Vous avez déjà donné un avis pour ce questionnaire']);
+            }
+
+            $stmt = $cnx->prepare($checkScore);
+            $stmt->execute([':id_questionnaire' => $id_questionnaire, ':id_user' => $_SESSION['id']]);
+            $score = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$score) {
+                return json_encode(['error' => 'Vous devez d\'abord jouer au questionnaire avant de donner un feedback']);
+            }
+
+            // Insérer le feedback
+            $sql = "INSERT INTO feedback (id_questionnaire, id_user, rating, comment) 
+                VALUES (:id_questionnaire, :id_user, :rating, :comment)";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([
+                ':id_questionnaire' => $id_questionnaire,
+                ':id_user' => $_SESSION['id'],
+                ':rating' => $rating,
+                ':comment' => $comment
+            ]);
+
+            return json_encode(['success' => 'Feedback enregistré avec succès']);
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }
 
 
 
@@ -578,6 +639,32 @@ if (!function_exists('startSession')) {
         }
     }
 
+    // getAllScoresForUser return the name of the questionnaire and their score
+
+    function getAllScoresForUser($id)
+    {
+        require_once 'db.php';
+        global $cnx;
+        startSession();
+        if (isLogin() && ($_SESSION['role'] == '1' || $_SESSION['id'] == $id)) {
+            try {
+                $sql = "SELECT scores.id as score_id, score, score_on, date, username, questionnaire.nom AS questionnaire_name
+                FROM scores
+                INNER JOIN users ON users.id = scores.id_user
+                INNER JOIN questionnaire ON questionnaire.id = scores.id_questionnaire
+                WHERE id_user = :id";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':id' => $id]);
+                $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                return json_encode(['success' => $scores]);
+            } catch (PDOException $e) {
+                return json_encode(['error' => $e->getMessage()]);
+            }
+        } else {
+            return json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
+        }
+    }
+
     // get.php
     function getUserById($id)
     {
@@ -644,17 +731,71 @@ if (!function_exists('startSession')) {
         }
     }
 
+    function checkLocked($identifier)
+    {
+        require_once 'db.php';
+        global $cnx;
+        try {
+            $sql = "SELECT locked FROM users WHERE username = :identifier OR email = :identifier";
+            $stmt = $cnx->prepare($sql);
+            $stmt->execute([':identifier' => $identifier]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($user) {
+                $locked = $user['locked'] ?? null;
+                if ($locked) {
+                    $now = time();
+                    $lockedTimestamp = strtotime($locked);
+                    if ($lockedTimestamp > $now) {
+                        return json_encode(['error' => 'Utilisateur bloqué jusqu\'au ' . $locked]);
+                    } else {
+                        $sql = "UPDATE users SET locked = NULL, try_count = 0 WHERE username = :identifier OR email = :identifier";
+                        $stmt = $cnx->prepare($sql);
+                        $stmt->execute([':identifier' => $identifier]);
+                    }
+                }
+                return json_encode(['success' => 'user_unlocked']);
+            } else {
+                return json_encode(['error' => 'Utilisateur non trouvé']);
+            }
+        } catch (PDOException $e) {
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
     // login.php
     function login($identifier, $password)
     {
         require_once 'db.php';
         global $cnx;
+
+        // Vérification si l'utilisateur est bloqué
+        $checkLocked = checkLocked($identifier);
+        if ($checkLocked !== json_encode(['success' => 'user_unlocked'])) {
+            return $checkLocked;
+        }
+
         try {
-            $sql = "SELECT id, username, email, role, groupe_id FROM users WHERE username = :identifier OR email = :identifier AND password = :password";
+            // Requête pour récupérer l'utilisateur
+            $sql = "SELECT id, username, email, role, groupe_id, password FROM users 
+                WHERE (username = :identifier OR email = :identifier)";
             $stmt = $cnx->prepare($sql);
-            $stmt->execute([':identifier' => $identifier, ':password' => hash('sha256', $password)]);
+            $stmt->execute([':identifier' => $identifier]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($user) {
+
+            $password_last_change = $user['password_last_change'];
+
+            if ($password_last_change) {
+                $date = new DateTime($password_last_change);
+                $now = new DateTime();
+                $interval = $date->diff($now);
+                if ($interval->days > 30) {
+                    resetPassword($user['email']);
+                    return json_encode(['error' => 'Le mot de passe a expiré, veuillez le changer, un lien vous a été envoyé']);
+                }
+            }
+
+            // Vérification si l'utilisateur existe et si le mot de passe est correct
+            if ($user && hash('sha256', $password) == $user['password']) {
                 startSession();
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
@@ -662,10 +803,32 @@ if (!function_exists('startSession')) {
                 $_SESSION['group_id'] = $user['groupe_id'];
                 return json_encode(['success' => 'Connecté avec succès']);
             } else {
-                return json_encode(['error' => 'Utilisateur non trouvé']);
+                // Incrémentation du compteur d'essais
+                $sql = "UPDATE users SET try_count = try_count + 1 WHERE username = :identifier OR email = :identifier";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':identifier' => $identifier]);
+
+                // Vérification du nombre d'essais
+                $sql = "SELECT try_count FROM users WHERE username = :identifier OR email = :identifier";
+                $stmt = $cnx->prepare($sql);
+                $stmt->execute([':identifier' => $identifier]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($user && $user['try_count'] >= 5) {
+                    // Blocage de l'utilisateur après 5 essais
+                    $date15 = new DateTime(); // Date actuelle
+                    $date15->modify('+15 minutes'); // Ajouter 15 minutes
+
+                    $sql = "UPDATE users SET locked = :date WHERE username = :identifier OR email = :identifier";
+                    $stmt = $cnx->prepare($sql);
+                    $stmt->execute([':identifier' => $identifier, ':date' => $date15->format('Y-m-d H:i:s')]);
+                    return json_encode(['error' => 'Utilisateur bloqué pour 15 minutes']);
+                }
+
+                return json_encode(['error' => 'Utilisateur non trouvé ou mot de passe invalide', 'try_count' => $user['try_count'] ?? 0]);
             }
         } catch (PDOException $e) {
-            return json_encode(['error' => $e->getMessage()]);
+            return json_encode(['error' => 'Erreur serveur : ' . $e->getMessage()]);
         }
     }
 
@@ -678,7 +841,7 @@ if (!function_exists('startSession')) {
     }
 
     // register.php
-    function register($username, $email, $password, $groupId = null)
+    function register($username, $email, $password, $groupId = null, $creationAdmin = false)
     {
         require_once 'db.php';
         global $cnx;
@@ -711,12 +874,45 @@ if (!function_exists('startSession')) {
                         ':password' => hash('sha256', $password)
                     ]);
                 }
-                startSession();
-                $_SESSION['username'] = $username;
-                $_SESSION['role'] = 0;
-                $_SESSION['group_id'] = $groupId ?? null;
-                $_SESSION['id'] = $cnx->lastInsertId();
-                return json_encode(['success' => 'Crée et connecté avec succès']);
+                if (!$creationAdmin) {
+                    startSession();
+                    $_SESSION['username'] = $username;
+                    $_SESSION['role'] = 0;
+                    $_SESSION['group_id'] = $groupId ?? null;
+                    $_SESSION['id'] = $cnx->lastInsertId();
+                    return json_encode(['success' => 'Crée et connecté avec succès']);
+                } else {
+                    $url = $_SERVER['HTTP_HOST'] . '/login.php';
+                    $subject = 'Création de compte';
+                    $message = "
+                    <html>
+                    <head>
+                        <title>Création de compte</title>
+                    </head>
+                    <body>
+                        <p>Bonjour <strong>$username</strong>,</p>
+                        <p>Votre compte a été créé avec succès. Vous pouvez vous connecter avec les identifiants suivants :</p>
+                        <ul>
+                            <li><strong>Nom d'utilisateur :</strong> $username</li>
+                            <li><strong>Mot de passe généré :</strong> $password</li>
+                        </ul>
+                        <p><em>Votre mot de passe a été généré automatiquement. Pensez à le changer dès que possible.</em></p>
+                        <p><a href='http://$url' style='color: #007BFF; text-decoration: none;'>Lien de connexion</a></p>
+                        <br>
+                        <p>Cordialement,</p>
+                        <p><strong>L'équipe TheQuiz</strong></p>
+                    </body>
+                    </html>
+                    ";
+
+                    $headers = "MIME-Version: 1.0" . "\r\n";
+                    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+                    $headers .= "From: TheQuiz <no-reply@thequiz.com>" . "\r\n";
+
+                    mail($email, $subject, $message, $headers);
+
+                    return json_encode(['success' => 'Utilisateur créé avec succès']);
+                }
             } else {
                 return json_encode(['error' => 'Utilisateur déjà existant']);
             }

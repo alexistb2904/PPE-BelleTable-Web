@@ -81,4 +81,19 @@ class UsersController
 
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    function getAllScoresForUser(Request $request, Response $response, array $args): Response
+    {
+        $idUser = $args['id'] ?? null;
+
+        if ($idUser !== null) {
+            $result = \getAllScoresForUser($idUser);
+            $response->getBody()->write($result);
+        } else {
+            $response->getBody()->write(json_encode(['error' => 'Paramètres manquants']));
+            return $response->withStatus(400);
+        }
+
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }

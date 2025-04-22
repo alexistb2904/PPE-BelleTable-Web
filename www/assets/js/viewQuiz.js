@@ -54,7 +54,7 @@ function getQuestionnaires() {
                     <div>
                         <a class="CTA_btn" id="seeQuestionnaire">Voir</a>
                         <a class="CTA_btn" id="seeAnswers">Voir scores</a>
-                        <a class="CTA_btn" id="seeProgression">Voir Progression</a>
+                        
                     </div>
                 `;
 					if (!themeSelect.innerHTML.includes(quiz.theme)) {
@@ -65,14 +65,10 @@ function getQuestionnaires() {
 					}
 
 					const seeAnswersBtn = questionnaire.querySelector('#seeAnswers');
-					seeAnswersBtn.onclick = () => seeAnswers(quiz.id);
+					seeAnswersBtn.onclick = () => seeAnswers(quiz.id, quiz.nom);
 
 					const seeQuestionnaireBtn = questionnaire.querySelector('#seeQuestionnaire');
 					seeQuestionnaireBtn.onclick = () => seeQuestionnaire(quiz.id, quiz.nom);
-
-					// Ajout de l'événement pour le nouveau bouton
-					const seeProgressionBtn = questionnaire.querySelector('#seeProgression');
-					seeProgressionBtn.onclick = () => showProgressionGraph(quiz.id, quiz.nom); // On passe l'ID et le nom
 
 					listeQuestionnaires.appendChild(questionnaire);
 				});
@@ -87,23 +83,20 @@ getQuestionnaires();
 async function showProgressionGraph(idQuestionnaire, nomQuestionnaire) {
 	loadingSpinner();
 	try {
-		// 1. Récupérer les scores personnels
 		const personalScoresData = await fetch(relativePath + `/api/questionnaires/${idQuestionnaire}/score/me`).then((res) => res.json());
 		if (!personalScoresData.success && personalScoresData.success.length === 0) {
 			popUp('yellow', 5000, 'Info', "Vous n'avez pas encore participé à ce quiz.");
 			removeLoadingSpinner();
 			return;
 		}
-		const personalScores = personalScoresData.success.sort((a, b) => new Date(a.date) - new Date(b.date)); // Trier par date
+		const personalScores = personalScoresData.success.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-		// 2. Récupérer tous les scores pour calculer la moyenne du groupe
 		const allScoresData = await fetch(relativePath + `/api/questionnaires/${idQuestionnaire}/score`).then((res) => res.json());
 		if (!allScoresData.success) {
 			throw new Error(allScoresData.error || 'Erreur lors de la récupération des scores.');
 		}
 		const allScores = allScoresData.success;
 
-		// 3. Filtrer les scores du groupe et calculer la moyenne par date
 		const groupScores = allScores.filter((score) => score.groupe_name === userGroupName);
 		const groupAverageByDate = {}; // { 'YYYY-MM-DD': { totalScore: X, totalMax: Y, count: Z } }
 
@@ -112,9 +105,8 @@ async function showProgressionGraph(idQuestionnaire, nomQuestionnaire) {
 			if (!groupAverageByDate[date]) {
 				groupAverageByDate[date] = { totalScore: 0, totalMax: 0, count: 0 };
 			}
-			// Assurer que score et score_on sont des nombres
 			const currentScore = parseFloat(score.score) || 0;
-			const currentMaxScore = parseFloat(score.score_on) || 1; // Eviter division par zéro
+			const currentMaxScore = parseFloat(score.score_on) || 1;
 
 			groupAverageByDate[date].totalScore += currentScore;
 			groupAverageByDate[date].totalMax += currentMaxScore;
@@ -128,20 +120,18 @@ async function showProgressionGraph(idQuestionnaire, nomQuestionnaire) {
 			const averageScore = data.count > 0 ? data.totalScore / data.count : 0;
 			const averageMax = data.count > 0 ? data.totalMax / data.count : 1;
 			return {
-				x: new Date(date).getTime(), // Timestamp pour ApexCharts
-				y: averageMax > 0 ? ((averageScore / averageMax) * 100).toFixed(2) : 0, // Pourcentage
+				x: new Date(date).getTime(),
+				y: averageMax > 0 ? ((averageScore / averageMax) * 100).toFixed(2) : 0,
 			};
 		});
 
-		// 4. Préparer les données pour le graphique personnel
 		const personalProgression = personalScores.map((score, index) => ({
-			x: new Date(score.date).getTime(), // Utiliser la date comme catégorie x
-			y: score.score_on > 0 ? ((score.score / score.score_on) * 100).toFixed(2) : 0, // Pourcentage
+			x: new Date(score.date).getTime(),
+			y: score.score_on > 0 ? ((score.score / score.score_on) * 100).toFixed(2) : 0,
 		}));
 
 		removeLoadingSpinner();
 
-		// 5. Créer et afficher la modale avec le graphique
 		createGraphModal(nomQuestionnaire, personalProgression, groupProgression);
 	} catch (error) {
 		removeLoadingSpinner();
@@ -151,7 +141,6 @@ async function showProgressionGraph(idQuestionnaire, nomQuestionnaire) {
 }
 
 function createGraphModal(title, personalData, groupData) {
-	// Supprimer une modale existante
 	const existingModal = document.getElementById('progressionGraphModal');
 	if (existingModal) {
 		existingModal.remove();
@@ -159,7 +148,7 @@ function createGraphModal(title, personalData, groupData) {
 
 	const modal = document.createElement('div');
 	modal.id = 'progressionGraphModal';
-	modal.className = 'graph-modal'; // Appliquer le style CSS
+	modal.className = 'graph-modal';
 
 	const modalContent = document.createElement('div');
 	modalContent.className = 'graph-modal-content';
@@ -173,7 +162,7 @@ function createGraphModal(title, personalData, groupData) {
 	chartTitle.textContent = `Progression pour: ${title}`;
 
 	const chartDiv = document.createElement('div');
-	chartDiv.id = 'progressionChart'; // ID pour ApexCharts
+	chartDiv.id = 'progressionChart';
 
 	modalContent.appendChild(closeBtn);
 	modalContent.appendChild(chartTitle);
@@ -181,7 +170,6 @@ function createGraphModal(title, personalData, groupData) {
 	modal.appendChild(modalContent);
 	document.body.appendChild(modal);
 
-	// Configuration ApexCharts
 	const options = {
 		series: [
 			{
@@ -207,21 +195,21 @@ function createGraphModal(title, personalData, groupData) {
 			enabled: false,
 		},
 		stroke: {
-			curve: 'smooth', // ou 'straight'
-			width: [3, 2], // Epaisseur différente pour les lignes
+			curve: 'straight',
+			width: [3, 2],
 		},
 		title: {
 			text: 'Progression des Scores',
 			align: 'left',
 		},
 		markers: {
-			size: [5, 3], // Taille différente pour les points
+			size: [5, 3],
 		},
 		xaxis: {
-			type: 'datetime', // Utiliser le type datetime pour les timestamps
+			type: 'datetime',
 			labels: {
-				datetimeUTC: false, // Afficher en heure locale
-				format: 'dd MMM yy HH:mm', // Format de date
+				datetimeUTC: false,
+				format: 'dd MMM yy HH:mm',
 			},
 			title: {
 				text: 'Date de Participation',
@@ -232,11 +220,11 @@ function createGraphModal(title, personalData, groupData) {
 				text: 'Score (%)',
 			},
 			min: 0,
-			max: 100, // Le score est en pourcentage
+			max: 100,
 		},
 		tooltip: {
 			x: {
-				format: 'dd MMM yyyy HH:mm', // Format de date dans le tooltip
+				format: 'dd MMM yyyy HH:mm',
 			},
 			y: {
 				formatter: function (val) {
@@ -257,7 +245,7 @@ function createGraphModal(title, personalData, groupData) {
 	chart.render();
 }
 
-async function seeAnswers(idQuestionnaire) {
+async function seeAnswers(idQuestionnaire, questionnaireName) {
 	loadingSpinner();
 	const userInfo = await fetch(relativePath + '/api/users/me')
 		.then((response) => response.json())
@@ -284,7 +272,6 @@ async function seeAnswers(idQuestionnaire) {
 					return null;
 				}
 			});
-		console.log(answers);
 		if (answers) {
 			const modal = document.createElement('div');
 			modal.id = 'answers_modal';
@@ -309,6 +296,15 @@ async function seeAnswers(idQuestionnaire) {
 				<span>Moyenne du Groupe : <span id="groupe_moy"></span></span></div>`;
 				}
 			}
+			container.innerHTML += `
+			<a class="CTA_btn" id="seeProgression">Voir Progression</a>
+			`;
+
+			container.querySelector('#seeProgression').addEventListener('click', () => {
+				modal.remove();
+				showProgressionGraph(idQuestionnaire, questionnaireName);
+			});
+
 			const closeBtn = document.createElement('button');
 			closeBtn.innerHTML = 'Fermer';
 			closeBtn.className = 'CTA_btn';
@@ -322,10 +318,10 @@ async function seeAnswers(idQuestionnaire) {
 				answerDiv.className = 'questionDiv';
 				answerDiv.id = 'answer_' + index;
 				answerDiv.dataset.id = answer.user_id;
-				answerDiv.dataset.groupe_name = answer.groupe_name;
+				answerDiv.dataset.groupe_name = answer.groupe_name || 'Aucun groupe';
 				answerDiv.innerHTML = `
 					<div>
-					<h3>${answer.username} | ${answer.groupe_name}</h3>
+					<h3>${answer.username} | ${answer.groupe_name || 'Aucun groupe'}</h3>
 					<h3>${answer.score} / ${answer.score_on}</h3>
 					</div>
 					`;
@@ -433,7 +429,59 @@ async function seeQuestionnaire(idQuestionnaire, nomQuestionnaire) {
 		playBtn.className = 'CTA_btn';
 		playBtn.href = relativePath + '/quiz/play/?id=' + idQuestionnaire;
 
+		const feedBackBtn = document.createElement('a');
+		feedBackBtn.innerHTML = 'Donner un avis';
+		feedBackBtn.className = 'CTA_btn';
+		feedBackBtn.href = relativePath + '/quiz/feedback/?id=' + idQuestionnaire;
+
+		const seeFeedbackBtn = document.createElement('a');
+		seeFeedbackBtn.innerHTML = 'Voir les avis';
+		seeFeedbackBtn.className = 'CTA_btn';
+
+		seeFeedbackBtn.onclick = () => {
+			const feedbackModal = document.createElement('div');
+			feedbackModal.id = 'feedback_modal';
+			feedbackModal.className = 'modalJavascript';
+			const feedbackContainer = document.createElement('div');
+			feedbackContainer.className = 'containerJavascript';
+			feedbackContainer.innerHTML = `
+			<h2>Les avis</h2>
+			`;
+			questionnaire.feedbacks.forEach((feedback) => {
+				const feedbackDiv = document.createElement('div');
+				feedbackDiv.className = 'feedbackDiv';
+				feedbackDiv.innerHTML = `
+				<h3>${feedback.username}</h3>
+				`;
+				const ratingDiv = document.createElement('div');
+				ratingDiv.className = 'ratingDiv';
+				for (let i = 0; i < feedback.rating; i++) {
+					const star = document.createElement('span');
+					star.innerHTML = '⭐';
+					ratingDiv.append(star);
+				}
+				feedbackDiv.append(ratingDiv);
+
+				feedbackDiv.innerHTML += `
+				<p>${feedback.comment}</p>
+				`;
+
+				feedbackContainer.append(feedbackDiv);
+			});
+			const closeFeedbackBtn = document.createElement('button');
+			closeFeedbackBtn.innerHTML = 'Fermer';
+			closeFeedbackBtn.className = 'CTA_btn';
+			closeFeedbackBtn.addEventListener('click', () => {
+				feedbackModal.remove();
+			});
+			feedbackContainer.append(closeFeedbackBtn);
+			feedbackModal.append(feedbackContainer);
+			document.body.append(feedbackModal);
+		};
+
 		container.append(playBtn);
+		container.append(seeFeedbackBtn);
+		container.append(feedBackBtn);
 		container.append(closeBtn);
 		questionnaire.questions.forEach((question, index) => {
 			const questionDiv = document.createElement('div');

@@ -63,7 +63,7 @@ if (!isAdmin()) {
                     <!-- Les utilisateurs seront ajoutés ici par JavaScript -->
                 </tbody>
             </table>
-
+            <button id="addUserBtn" class="actionButton">Ajouter un utilisateur</button>
         </div>
 
         <div class="groupList">

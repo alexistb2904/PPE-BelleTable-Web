@@ -90,7 +90,7 @@ function loginModal() {
 					popUp('base', 2000, 'Connexion réussi !');
 					window.location.reload();
 				} else {
-					popUp('red', 5000, 'Erreur de connexion', data.error);
+					popUp('red', 5000, 'Erreur de connexion', data.error + (data.try_count ? ' ' + (5 - parseInt(data.try_count)) + ' essais restants' : ''));
 					form.style.cursor = 'default';
 				}
 			});
@@ -120,6 +120,18 @@ function registerModal() {
 	groupID.name = 'groupID';
 	groupID.placeholder = 'Code de groupe (facultatif)';
 	groupID.required = false;
+
+	const rgpdConsent = document.createElement('input');
+	rgpdConsent.type = 'checkbox';
+	rgpdConsent.required = true;
+	const rgpdLabel = document.createElement('label');
+	rgpdLabel.id = 'rgpdLabel';
+	rgpdLabel.innerHTML = "J'accepte les <a href='pdc'>conditions d'utilisation et la politique de confidentialité</a>";
+
+	const rgpdContainer = document.createElement('div');
+	rgpdContainer.className = 'rgpdContainer';
+	rgpdContainer.append(rgpdConsent, rgpdLabel);
+
 	const submit = document.createElement('input');
 	submit.type = 'submit';
 	submit.value = "S'inscrire";
@@ -128,7 +140,7 @@ function registerModal() {
 	const form = document.createElement('form');
 	form.id = 'registerForm';
 
-	form.append(username, email, password, groupID, submit);
+	form.append(username, email, password, groupID, rgpdContainer, submit);
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();

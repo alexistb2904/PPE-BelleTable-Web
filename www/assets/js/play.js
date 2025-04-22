@@ -37,7 +37,6 @@ function playMusic() {
 			}
 		});
 
-		console.log(volume);
 		document.querySelector('.gamePage').appendChild(volume);
 	}
 }
@@ -153,10 +152,8 @@ async function startGame(results, time, points) {
 	}, 1000);
 
 	let questionsMelange = []; // Liste pour stocker les questions mélangées
-	console.log('Récupération des questions...');
 	try {
 		const questions = questionsToUse.success.questions; // Extraction des questions
-		console.log('Questions récupérées:', questions);
 
 		let newJSONStructure = {};
 		questions.forEach((question, index) => {
@@ -185,7 +182,6 @@ async function startGame(results, time, points) {
 		questionsMelange = Object.values(newJSONStructure)
 			.sort(() => Math.random() - 0.5)
 			.slice(0, amountOfQuestions);
-		console.log('Questions mélangées:', questionsMelange);
 
 		// Ajout de la page de jeu au DOM
 		app.appendChild(gamePage);
@@ -273,11 +269,6 @@ async function startGame(results, time, points) {
 				if (reponseToPush.length == 0) {
 					reponseToPush.push('Pas de réponse<<#');
 				}
-				console.log(
-					'Réponse sélectionnée:',
-					reponseToPush.map((reponse) => reponse.split('<<#')[0])
-				);
-				console.log('Réponse correcte:', question.answer);
 
 				// Si une réponse est sélectionnée ou si le temps est écoulé
 				if (reponseToPush || tempsRestant == 0) {
@@ -369,7 +360,6 @@ async function startGame(results, time, points) {
 
 		let score = 0; // Initialisation du score
 		let maxPoints = 0; // Initialisation du nombre de points maximum
-		console.log('Réponses Object', reponses);
 		questions.forEach((question, index) => {
 			if (points == 'true') {
 				console.log('Question:', question);
@@ -403,11 +393,6 @@ async function startGame(results, time, points) {
 		if (maxPoints < 0) {
 			maxPoints = 0;
 		}
-		console.log(previousScores);
-		console.log(questionnaireID);
-		console.log(userID);
-		console.log('Score:', score);
-		console.log('Nombre de points maximum:', maxPoints);
 		const [bestScore, bestScoreOn] = getBestScore(score, maxPoints);
 		registerScore(score, maxPoints, reponses);
 
@@ -416,6 +401,7 @@ async function startGame(results, time, points) {
             <h1>Résultat</h1>
             ${score > bestScore ? `<h2>Nouveau meilleur score: ${score}/${maxPoints}</h2>` : `<h2>Meilleur score: ${bestScore}/${bestScoreOn}</h2>`}
             <div class="score">Score: ${score}/${maxPoints}</div>
+			<a class="CTA_btn" id="giveFeedback" href="../../quiz/feedback/?id=${questionnaireID}">Donner son avis</a>
             ${questions
 				.map((question, index) => {
 					let divReponses = ``;
