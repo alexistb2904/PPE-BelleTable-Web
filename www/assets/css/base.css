@@ -1000,7 +1000,6 @@ main#quiz .questionnaire {
 main#quiz ~ #questionnaire_modal .containerJavascript,
 main#quiz ~ #answers_modal .containerJavascript,
 main#quiz ~ #personal_answers_modal .containerJavascript {
-	color: var(--backgroundColor);
 	width: 80%;
 }
 
