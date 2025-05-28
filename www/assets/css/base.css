@@ -672,11 +672,11 @@ main#home {
 .CTA_btn {
 	text-align: center;
 	padding: 1rem 2rem;
-	background-color: var(--primary);
+	background: linear-gradient(135deg, var(--primary), var(--primaryLight));
 	border: none;
 	color: var(--onPrimary);
-	border-radius: var(--inRadius);
-	transition: 0.25s;
+	border-radius: 0.75rem;
+	transition: all 0.3s ease;
 	cursor: pointer;
 	text-decoration: none;
 	display: inline-flex;
@@ -690,43 +690,277 @@ main#home {
 	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	box-shadow: 0 4px 20px rgba(241, 53, 109, 0.3);
+	position: relative;
 }
 
 .CTA_btn:hover {
-	background-color: var(--primaryLight);
-	transform: translateY(-2px);
+	background: linear-gradient(135deg, var(--primaryLight), var(--primary));
+	transform: translateY(-3px);
+	box-shadow: 0 8px 30px rgba(241, 53, 109, 0.4);
 }
+
+.CTA_btn:active {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 20px rgba(241, 53, 109, 0.3);
+}
+
+.CTA_btn:focus {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+/* ============================================
+   MODALS DE CONNEXION ET INSCRIPTION
+   ============================================ */
 
 .modalJavascript {
 	position: fixed;
-	background: rgb(0 0 0 / 50%);
+	top: 0;
+	left: 0;
 	width: 100%;
-	display: flex;
 	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+	backdrop-filter: blur(10px);
+	display: flex;
 	justify-content: center;
 	align-items: center;
+	z-index: 1000;
+	animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+	from {
+		opacity: 0;
+		backdrop-filter: blur(0px);
+	}
+	to {
+		opacity: 1;
+		backdrop-filter: blur(10px);
+	}
 }
 
 .containerJavascript {
 	display: flex;
 	flex-direction: column;
-	width: 50%;
-	background: white;
-	padding: var(--padding);
-	border-radius: var(--outRadius);
-	gap: 1vh;
+	width: min(90%, 450px);
+	max-height: 90vh;
+	background: var(--backgroundColorLight);
+	border: 1px solid rgba(241, 53, 109, 0.2);
+	border-radius: 1.5rem;
+	padding: 2.5rem;
+	gap: 1.5rem;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+	animation: modalSlideIn 0.3s ease-out;
+	position: relative;
+	overflow-y: auto;
 }
 
+@keyframes modalSlideIn {
+	from {
+		transform: translateY(-30px) scale(0.95);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0) scale(1);
+		opacity: 1;
+	}
+}
+
+/* Titre implicite pour les formulaires */
+.containerJavascript form::before {
+	content: attr(data-title);
+	font-size: 1.8rem;
+	font-weight: 700;
+	color: white;
+	text-align: center;
+	margin-bottom: 1rem;
+	background: linear-gradient(135deg, var(--primary), var(--primaryLight));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Styles pour les formulaires de connexion */
 .containerJavascript form {
 	display: flex;
 	flex-direction: column;
-	gap: 2vh;
+	gap: 1.5rem;
 }
 
-.containerJavascript form input {
-	border-radius: var(--inRadius);
-	border: 1px solid var(--primary);
-	padding: var(--padding);
+#loginForm::before {
+	content: '🔑 Connexion';
+}
+
+#registerForm::before {
+	content: '✨ Inscription';
+}
+
+#forgotPasswordForm::before {
+	content: '🔐 Mot de passe oublié';
+}
+
+#changePasswordForm::before {
+	content: '🔄 Nouveau mot de passe';
+}
+
+/* Styles pour les champs de saisie */
+.containerJavascript form input[type='text'],
+.containerJavascript form input[type='email'],
+.containerJavascript form input[type='password'] {
+	width: 100%;
+	padding: 1rem 1.25rem;
+	border: 2px solid rgba(255, 255, 255, 0.1);
+	border-radius: 0.75rem;
+	background: rgba(255, 255, 255, 0.05);
+	color: white;
+	font-size: 1rem;
+	font-family: inherit;
+	transition: all 0.3s ease;
+	position: relative;
+}
+
+.containerJavascript form input[type='text']:focus,
+.containerJavascript form input[type='email']:focus,
+.containerJavascript form input[type='password']:focus {
+	outline: none;
+	border-color: var(--primary);
+	background: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 0 0 4px rgba(241, 53, 109, 0.15);
+	transform: translateY(-2px);
+}
+
+.containerJavascript form input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+	font-weight: 400;
+}
+
+/* Animation pour les champs */
+.containerJavascript form input[type='text'],
+.containerJavascript form input[type='email'],
+.containerJavascript form input[type='password'] {
+	position: relative;
+}
+
+.containerJavascript form input:hover {
+	border-color: rgba(241, 53, 109, 0.3);
+	background: rgba(255, 255, 255, 0.07);
+}
+
+/* Styles pour les boutons d'action */
+.containerJavascript .CTA_btn {
+	background: transparent;
+	color: rgba(255, 255, 255, 0.8);
+	border: 2px solid rgba(255, 255, 255, 0.2);
+	padding: 0.875rem 1.5rem;
+	border-radius: 0.75rem;
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.containerJavascript .CTA_btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.3);
+	color: white;
+	transform: translateY(-2px);
+}
+
+/* Amélioration de l'accessibilité */
+.containerJavascript form input:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+/* États de chargement */
+.containerJavascript form.loading {
+	pointer-events: none;
+	opacity: 0.7;
+}
+
+.containerJavascript form.loading input[type='submit'] {
+	background: linear-gradient(135deg, rgba(241, 53, 109, 0.5), rgba(239, 78, 126, 0.5));
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
+}
+
+/* Animation de validation */
+.containerJavascript form input.success {
+	border-color: #22c55e;
+	background: rgba(34, 197, 94, 0.1);
+}
+
+.containerJavascript form input.error {
+	border-color: #ef4444;
+	background: rgba(239, 68, 68, 0.1);
+	animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-4px);
+	}
+	75% {
+		transform: translateX(4px);
+	}
+}
+
+/* Responsive design pour les modals */
+@media (max-width: 768px) {
+	.containerJavascript {
+		width: 95%;
+		padding: 2rem 1.5rem;
+		margin: 1rem;
+		border-radius: 1rem;
+	}
+
+	.containerJavascript form::before {
+		font-size: 1.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.containerJavascript form {
+		gap: 1.25rem;
+	}
+
+	.containerJavascript form input[type='text'],
+	.containerJavascript form input[type='email'],
+	.containerJavascript form input[type='password'] {
+		padding: 0.875rem 1rem;
+		font-size: 0.95rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.containerJavascript {
+		width: 98%;
+		padding: 1.5rem 1rem;
+		margin: 0.5rem;
+		border-radius: 0.75rem;
+	}
+
+	.containerJavascript form input[type='text'],
+	.containerJavascript form input[type='email'],
+	.containerJavascript form input[type='password'] {
+		padding: 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.containerJavascript form input[type='submit'] {
+		padding: 0.875rem 1.5rem;
+		font-size: 1rem;
+	}
 }
 
 main#quiz {

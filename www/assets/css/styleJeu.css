@@ -1,121 +1,184 @@
+/* ============================================
+   QUIZ GAME STYLES
+   ============================================ */
+
+/* Reset et configuration de base pour le jeu */
 * {
 	padding: 0;
 	margin: 0;
+	box-sizing: border-box;
 }
 
+/* Configuration spécifique pour la page de jeu */
 body {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 16px;
 	line-height: 1.6;
 	margin: 0;
 	padding: 0;
-	background-color: #1b1b1b;
+	background: var(--backgroundColor, #1b1b1b);
 	color: white;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
-	height: 100vh;
-
-	--primary: #f1356d;
+	min-height: 100vh;
+	overflow-x: hidden;
+	position: relative;
 }
 
+/* Container principal du jeu */
 main {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-between;
 	position: relative;
-	width: 80%;
-	height: 80%;
-	border-radius: 15px;
-	background-color: #272727;
-	padding: 3%;
+	width: min(90%, 1200px);
+	height: min(90vh, 800px);
+	padding: clamp(1rem, 3vw, 2rem);
 	overflow-y: auto;
 }
 
+/* Scrollbar personnalisée */
 @supports (scrollbar-color: auto) {
-	main {
-		scrollbar-color: var(--primary) #272727;
+	main,
+	.resultPage {
+		scrollbar-color: var(--primary, #f1356d) var(--backgroundColorLight, #272727);
 		scrollbar-width: thin;
-		scrollbar-track-color: #272727;
-		scrollbar-gutter: stable;
 	}
 }
 
-main .title {
-	text-align: center;
-	height: 10%;
-	width: 100%;
+main::-webkit-scrollbar {
+	width: 8px;
 }
 
+main::-webkit-scrollbar-track {
+	background: var(--backgroundColorLight, #272727);
+	border-radius: 4px;
+}
+
+main::-webkit-scrollbar-thumb {
+	background: var(--primary, #f1356d);
+	border-radius: 4px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+	background: var(--primaryLight, #ef4e7e);
+}
+
+/* Titre principal */
+main .title {
+	text-align: center;
+	width: 100%;
+	margin-bottom: 2rem;
+}
+
+main .title h1 {
+	font-size: clamp(1.5rem, 4vw, 3rem);
+	font-weight: 700;
+	background: linear-gradient(135deg, var(--primary, #f1356d), var(--primaryLight, #ef4e7e));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Contenu principal */
 main .content {
 	width: 100%;
-	height: 90%;
+	flex: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1vh;
+	gap: 1.5rem;
+	justify-content: center;
 }
 
+/* Footer du jeu */
 footer {
-	padding: 1vh;
+	padding: 1rem;
+	margin-top: auto;
+	width: 100%;
+	text-align: center;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.9rem;
 }
+
+/* ============================================
+   NOTIFICATIONS ET POPUPS
+   ============================================ */
 
 .popup-container {
-	width: 60%;
+	width: min(90%, 500px);
 	position: fixed;
-	opacity: 0.2;
+	opacity: 0;
 	bottom: -30%;
 	left: 50%;
-	transform: translate(-50%);
-	z-index: 50;
+	transform: translateX(-50%);
+	z-index: 1000;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	animation: fadeIn 1s forwards;
+	animation: slideUp 0.5s ease-out forwards;
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		bottom: -30%;
+	}
+	to {
+		opacity: 1;
+		bottom: 2rem;
+	}
 }
 
 .base-notif,
 .red-notif {
 	display: flex;
-	border-radius: 10px;
-	gap: 2vh;
-	border-left: 0.5vh solid var(--primary);
+	border-radius: var(--inRadius, 0.5rem);
+	gap: 1rem;
+	border-left: 4px solid var(--primary, #f1356d);
 	color: white;
-	padding: 2%;
-	background-color: #1b1b1b;
-	box-shadow: 0.25vh 0.25vh 0.5vh #1b1b1b;
+	padding: 1rem 1.5rem;
+	background: var(--backgroundColorLight, #272727);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	max-width: 100%;
+	word-wrap: break-word;
 }
 
 .red-notif {
-	border-left: 0.5vh solid red;
-	background-color: rgb(239, 86, 86);
+	border-left-color: #ef4444;
+	background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(185, 28, 28, 0.1));
 }
 
-.red-notif #title-popup {
-	color: red;
-}
-
+.red-notif #title-popup,
 .red-notif #title-popup span {
-	color: red;
+	color: #ef4444;
 }
 
-.red-notif div:last-of-type,
-.base-notif div:last-of-type {
-	font-size: 80%;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-.popup-container md-outlined-button {
-	margin-top: 3%;
-	--md-outlined-button-outline-color: red;
-	--md-outlined-button-label-text-color: red;
+#title-popup {
+	font-weight: 600;
+	font-size: 1rem;
+	margin-bottom: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-a {
-	text-decoration: none;
-	color: white;
+.base-notif div:last-of-type,
+.red-notif div:last-of-type {
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.8);
+	line-height: 1.4;
 }
+
+/* ============================================
+   APPLICATION PRINCIPALE DU JEU
+   ============================================ */
 
 #app {
 	display: flex;
@@ -123,14 +186,18 @@ a {
 	align-items: center;
 	justify-content: center;
 	position: relative;
-	width: 80%;
-	height: 80%;
-	border-radius: 15px;
-	background-color: #272727;
-	padding: 3%;
+	width: min(90%, 1200px);
+	height: min(90vh, 800px);
+	border-radius: var(--outRadius, 1rem);
+	background: var(--backgroundColorLight, #272727);
+	padding: clamp(1rem, 3vw, 2rem);
 	overflow: hidden;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Pages du jeu */
 #app .startPage,
 #app .configPage,
 #app .gamePage {
@@ -141,144 +208,197 @@ a {
 	height: 100%;
 	justify-content: center;
 	align-items: center;
+	gap: 2rem;
 }
 
+/* ============================================
+   PAGE DE DÉMARRAGE - ANIMATIONS
+   ============================================ */
+
 #app .firstText {
-	transform: translateX(0);
-	font-size: 5vw;
-	animation: fromRight 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-	display: inline-block;
+	font-size: clamp(2rem, 5vw, 4rem);
+	font-weight: 700;
+	text-align: center;
+	opacity: 0;
+	transform: translateX(-100%);
+	animation: slideInRight 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 #app .firstText:nth-child(2) {
-	font-size: 5vw;
-	animation: fromRight 1.5s 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+	animation-delay: 0.5s;
 }
 
 #app .firstText:nth-child(3) {
-	font-size: 6vw;
-	animation: fromRightSpecial 4s 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-	margin-bottom: 3vh;
+	font-size: clamp(2.5rem, 6vw, 5rem);
+	background: linear-gradient(135deg, var(--primary, #f1356d), var(--primaryLight, #ef4e7e));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	animation: slideInRightSpecial 4s 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+	margin-bottom: 2rem;
 }
 
-#app .exitAnimation {
-	animation: exitToLeft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-#app .startPage .actionButton {
-	transform: translateX(0);
-	animation: fromRight 1s 2.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-	font-size: 3vw;
-	width: 25%;
-}
-#app .actionButton {
-	--bg: #151515;
-	--hover-bg: var(--primary);
-	--hover-text: #000;
-	color: #fff;
-	cursor: pointer;
-	border: 1px solid var(--bg);
-	border-radius: 15px;
-	padding: 0.5em 1em;
-	background: var(--bg);
-	transition: 0.2s;
-	font-size: 1.5vw;
-}
-
-#app .actionButton:hover {
-	color: var(--hover-text);
-	transform: translate(-0.25rem, -0.25rem);
-	background: var(--hover-bg);
-	box-shadow: 0.5rem 0.5rem var(--bg);
-}
-
-#app .actionButton:active {
-	transform: translate(0, 0);
-	box-shadow: none;
-}
-
-@keyframes fromRight {
-	0% {
-		transform: translateX(-100%);
+/* Animations d'entrée */
+@keyframes slideInRight {
+	from {
 		opacity: 0;
+		transform: translateX(-100%);
 	}
-	100% {
-		transform: translateX(0);
+	to {
 		opacity: 1;
+		transform: translateX(0);
 	}
 }
 
-@keyframes fromRightSpecial {
+@keyframes slideInRightSpecial {
 	0% {
-		transform: translateX(-100%);
 		opacity: 0;
+		transform: translateX(-100%);
 	}
 	20% {
-		transform: translateX(0);
 		opacity: 1;
+		transform: translateX(0);
 	}
 	40%,
 	50% {
-		transform: scale(1.4) rotate(-10deg);
+		transform: scale(1.1) rotate(-2deg);
 	}
 	60%,
 	100% {
-		transform: scale(1) rotate(-5deg);
+		transform: scale(1) rotate(0deg);
 	}
 }
 
-@keyframes exitToLeft {
-	0% {
-		transform: translateX(0);
+/* Animation de sortie */
+#app .exitAnimation {
+	animation: slideOutLeft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideOutLeft {
+	from {
 		opacity: 1;
+		transform: translateX(0);
 	}
-	100% {
-		transform: translateX(100%);
+	to {
 		opacity: 0;
+		transform: translateX(100%);
 	}
 }
+
+/* ============================================
+   BOUTONS D'ACTION
+   ============================================ */
+
+#app .actionButton {
+	position: relative;
+	background: var(--backgroundColorLight, #272727);
+	color: white;
+	cursor: pointer;
+	border: 2px solid var(--primary, #f1356d);
+	border-radius: var(--inRadius, 0.5rem);
+	padding: 1rem 2rem;
+	font-size: clamp(1rem, 2vw, 1.2rem);
+	font-weight: 600;
+	transition: all 0.3s ease;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-width: 200px;
+	opacity: 0;
+	transform: translateX(-100%);
+	animation: slideInRight 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+#app .startPage .actionButton {
+	animation: slideInRight 1s 2.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+#app .actionButton:hover {
+	background: var(--primary, #f1356d);
+	color: white;
+	transform: translateY(-3px);
+	box-shadow: 0 8px 25px rgba(241, 53, 109, 0.4);
+}
+
+#app .actionButton:active {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 15px rgba(241, 53, 109, 0.3);
+}
+
+#app .actionButton:focus {
+	outline: 2px solid var(--primary, #f1356d);
+	outline-offset: 2px;
+}
+
+/* ============================================
+   PAGE DE CONFIGURATION
+   ============================================ */
 
 #app .configPage {
 	justify-content: space-around;
-	animation: fromRight ease-in-out 1.5s;
+	animation: slideInRight 1.5s ease-in-out;
+	gap: 3rem;
 }
 
 #app .configPage h1,
 #app .gamePage h1 {
-	font-size: 4vw;
+	font-size: clamp(2rem, 4vw, 3rem);
+	text-align: center;
+	margin-bottom: 2rem;
 }
 
 #app .configContainer {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	max-width: 600px;
+	gap: 1.5rem;
 }
 
 #app .configContainer .configItem {
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	flex-direction: column;
+	gap: 0.5rem;
 	width: 100%;
-	margin: 1vh 0;
 }
 
 #app .configContainer .configItem label {
-	width: 40%;
-	display: inline-flex;
-	flex-direction: column;
-	justify-content: center;
-	font-size: 1vw;
+	font-size: clamp(1rem, 2vw, 1.2rem);
+	font-weight: 600;
+	color: var(--primary, #f1356d);
+	margin-bottom: 0.5rem;
 }
 
 #app .configContainer .configItem select,
 #app .configContainer .configItem input {
 	width: 100%;
-	padding: 0.25em;
-	border-radius: 15px;
-	border: 1px solid #1a1a1a;
-	background-color: #272727;
+	padding: 1rem;
+	border-radius: var(--inRadius, 0.5rem);
+	border: 2px solid rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.05);
 	color: white;
-	font-size: 2vw;
+	font-size: clamp(1rem, 2vw, 1.1rem);
+	transition: all 0.3s ease;
 }
+
+#app .configContainer .configItem select:focus,
+#app .configContainer .configItem input:focus {
+	outline: none;
+	border-color: var(--primary, #f1356d);
+	background: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 0 0 3px rgba(241, 53, 109, 0.1);
+}
+
+#app .configContainer .configItem select option {
+	background: var(--backgroundColorLight, #272727);
+	color: white;
+}
+
+/* ============================================
+   PAGE DE JEU
+   ============================================ */
 
 #app .gamePage .questionContainer {
 	position: relative;
@@ -287,164 +407,504 @@ a {
 	flex-direction: column;
 	height: 100%;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: center;
+	gap: 2rem;
+	padding: 1rem;
+}
+
+/* Éléments d'interface du jeu */
+#app .gamePage .questionContainer .counter,
+#app .gamePage .questionContainer .timer,
+#app .gamePage .timerGlobal,
+#app .volume {
+	position: absolute;
+	padding: 0.75rem 1rem;
+	border-radius: var(--inRadius, 0.5rem);
+	background: rgba(26, 26, 26, 0.9);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+	font-weight: 600;
+	color: white;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 #app .gamePage .questionContainer .counter,
 #app .volume {
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	padding: 0.5rem;
-	display: inline-block;
-	border-radius: 0.5rem;
-	background-color: #1a1a1a;
-	box-sizing: border-box;
-	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
-	font-size: 1.5vw;
+	bottom: 1rem;
+	right: 1rem;
 }
-#app .gamePage .questionContainer .timer,
-#app .gamePage .timerGlobal {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	padding: 0.5rem;
-	display: inline-block;
-	border-radius: 0.5rem;
-	background-color: #1a1a1a;
-	box-sizing: border-box;
-	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
-	font-size: 1.5vw;
+
+#app .gamePage .questionContainer .timer {
+	bottom: 1rem;
+	left: 1rem;
 }
 
 #app .gamePage .timerGlobal {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: min-content;
-	height: min-content;
+	top: 1rem;
+	right: 1rem;
+	color: var(--primary, #f1356d);
 }
 
+/* Volume control */
 #app .volume {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 4vw;
-	bottom: 15%;
-	z-index: 2;
+	width: 3rem;
+	height: 3rem;
+	bottom: 20%;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	z-index: 10;
+}
+
+#app .volume:hover {
+	background: rgba(241, 53, 109, 0.2);
+	border-color: var(--primary, #f1356d);
+	transform: scale(1.1);
 }
 
 #app .volume img {
-	width: 2vw;
+	width: 1.5rem;
+	height: 1.5rem;
+	filter: brightness(0) invert(1);
 }
 
+/* Question */
 #app .gamePage .questionContainer h1 {
-	width: 80%;
+	width: 100%;
+	max-width: 800px;
 	text-align: center;
-	font-size: 2vw;
+	font-size: clamp(1.2rem, 2.5vw, 2rem);
+	line-height: 1.4;
+	padding: 2rem;
+	background: rgba(255, 255, 255, 0.03);
+	border-radius: var(--inRadius, 0.5rem);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	margin: 0;
 }
 
+/* Container des réponses */
 #app .gamePage .questionContainer .reponses {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	border-radius: 0.5rem;
-	background-color: #1a1a1a;
-	box-sizing: border-box;
-	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
-	padding: 0.25rem;
-	width: 80%;
-	font-size: 14px;
+	border-radius: var(--inRadius, 0.5rem);
+	background: rgba(26, 26, 26, 0.8);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 1rem;
+	width: 100%;
+	max-width: 800px;
+	gap: 0.5rem;
+	transition: all 0.3s ease;
 }
 
+/* États des réponses */
+#app .gamePage .questionContainer .reponses.background_true {
+	background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.1));
+	border-color: rgba(34, 197, 94, 0.5);
+	box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+#app .gamePage .questionContainer .reponses.background_false {
+	background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.1));
+	border-color: rgba(239, 68, 68, 0.5);
+	box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+/* Réponses individuelles */
 #app .gamePage .questionContainer .reponses .radio {
-	flex: 1 1 auto;
+	flex: 1;
 	text-align: center;
 }
 
 #app .gamePage .questionContainer .reponses .radio input {
 	display: none;
 }
+
 #app .gamePage .questionContainer .reponses .radio .reponse {
 	display: flex;
 	cursor: pointer;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0.5rem;
-	border: none;
-	padding: 0.5rem 0;
+	border-radius: var(--inRadius, 0.5rem);
+	border: 2px solid transparent;
+	padding: 1rem;
 	color: white;
-	transition: all 0.15s ease-in-out;
+	font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+	font-weight: 500;
+	transition: all 0.3s ease;
+	background: rgba(255, 255, 255, 0.03);
+	min-height: 60px;
+	text-align: center;
+	line-height: 1.3;
 }
 
 #app .gamePage .questionContainer .reponses .radio .reponse:hover {
-	background-color: #222222;
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(241, 53, 109, 0.3);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 #app .gamePage .questionContainer .reponses .radio input:checked + .reponse {
-	background-color: #272727;
+	background: var(--primary, #f1356d);
+	border-color: var(--primary, #f1356d);
+	color: white;
 	font-weight: 600;
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(241, 53, 109, 0.4);
 }
 
-#app .gamePage .questionContainer .reponses.background_true {
-	background-color: #174d19;
-}
-
-#app .gamePage .questionContainer .reponses.background_false {
-	background-color: #621919;
-}
+/* ============================================
+   PAGE DE RÉSULTATS
+   ============================================ */
 
 #app .resultPage {
-	width: 80%;
-	padding: 0 1rem;
-	gap: 1vh;
+	width: 100%;
+	max-width: 900px;
+	padding: 1rem;
+	gap: 1.5rem;
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
-}
-
-@supports (scrollbar-color: auto) {
-	.resultPage {
-		scrollbar-color: var(--primary) #272727;
-		scrollbar-width: thin;
-		scrollbar-track-color: #272727;
-		scrollbar-gutter: stable;
-	}
+	align-items: center;
 }
 
 #app .resultPage h1 {
-	font-size: 3vw;
+	font-size: clamp(2rem, 4vw, 3rem);
 	text-align: center;
+	background: linear-gradient(135deg, var(--primary, #f1356d), var(--primaryLight, #ef4e7e));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	margin-bottom: 0;
 }
 
 #app .resultPage .score {
-	font-size: 2vw;
+	font-size: clamp(1.2rem, 3vw, 2rem);
 	text-align: center;
-	padding: 0.5rem;
-	border-radius: 0.5rem;
-	margin-bottom: 2vh;
-	font-weight: 600;
-	background-color: #1a1a1a;
-	box-sizing: border-box;
-	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+	padding: 1.5rem;
+	border-radius: var(--inRadius, 0.5rem);
+	font-weight: 700;
+	background: linear-gradient(135deg, var(--primary, #f1356d), var(--primaryLight, #ef4e7e));
+	color: white;
+	box-shadow: 0 8px 25px rgba(241, 53, 109, 0.3);
+	min-width: 300px;
 }
 
 #app .resultPage .resultContainer {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	box-sizing: border-box;
-	padding: 0.5rem;
-	border-radius: 0.5rem;
-	box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.06);
+	padding: 1.5rem;
+	border-radius: var(--inRadius, 0.5rem);
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	gap: 1rem;
+	transition: all 0.3s ease;
+}
+
+#app .resultPage .resultContainer:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(241, 53, 109, 0.3);
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 #app .resultPage .resultContainer .question {
-	font-size: 1.5vw;
+	font-size: clamp(1rem, 2vw, 1.3rem);
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--primary, #f1356d);
 }
 
 #app .resultPage .actionButton {
-	margin: 1vh auto;
-	width: 80%;
-	font-size: 1.5vw;
+	margin: 2rem auto 1rem auto;
+	width: 100%;
+	max-width: 400px;
+	font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1024px) {
+	main,
+	#app {
+		width: 95%;
+		height: 95vh;
+		padding: 1.5rem;
+	}
+
+	#app .configContainer {
+		max-width: 500px;
+	}
+
+	#app .gamePage .questionContainer h1 {
+		padding: 1.5rem;
+	}
+}
+
+@media (max-width: 768px) {
+	main,
+	#app {
+		width: 98%;
+		height: 98vh;
+		padding: 1rem;
+		border-radius: 0.5rem;
+	}
+
+	.popup-container {
+		width: 95%;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	#app .configContainer .configItem {
+		gap: 0.75rem;
+	}
+
+	#app .gamePage .questionContainer {
+		gap: 1.5rem;
+		padding: 0.5rem;
+	}
+
+	#app .gamePage .questionContainer h1 {
+		padding: 1rem;
+	}
+
+	#app .gamePage .questionContainer .reponses {
+		padding: 0.75rem;
+		gap: 0.4rem;
+	}
+
+	#app .gamePage .questionContainer .reponses .radio .reponse {
+		padding: 0.75rem;
+		min-height: 50px;
+	}
+
+	/* Repositionner les éléments UI sur mobile */
+	#app .gamePage .questionContainer .counter,
+	#app .gamePage .questionContainer .timer,
+	#app .gamePage .timerGlobal,
+	#app .volume {
+		position: fixed;
+		font-size: 0.9rem;
+		padding: 0.5rem;
+	}
+
+	#app .volume {
+		bottom: 1rem;
+		right: 1rem;
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	#app .resultPage .score {
+		min-width: auto;
+		width: 100%;
+	}
+}
+
+@media (max-width: 480px) {
+	main,
+	#app {
+		width: 100%;
+		height: 100vh;
+		border-radius: 0;
+		padding: 0.75rem;
+	}
+
+	#app .firstText {
+		margin: 0.5rem 0;
+	}
+
+	#app .firstText:nth-child(3) {
+		margin-bottom: 1rem;
+	}
+
+	#app .actionButton {
+		min-width: 150px;
+		padding: 0.75rem 1.5rem;
+	}
+
+	#app .configContainer {
+		gap: 1rem;
+	}
+
+	#app .configContainer .configItem select,
+	#app .configContainer .configItem input {
+		padding: 0.75rem;
+	}
+
+	#app .gamePage .questionContainer {
+		gap: 1rem;
+		padding: 0.25rem;
+	}
+
+	#app .gamePage .questionContainer h1 {
+		padding: 0.75rem;
+	}
+
+	#app .gamePage .questionContainer .reponses {
+		padding: 0.5rem;
+		gap: 0.3rem;
+	}
+
+	#app .gamePage .questionContainer .reponses .radio .reponse {
+		padding: 0.6rem;
+		min-height: 45px;
+	}
+
+	#app .resultPage {
+		padding: 0.5rem;
+		gap: 1rem;
+	}
+
+	#app .resultPage .resultContainer {
+		padding: 1rem;
+	}
+}
+
+/* ============================================
+   ANIMATIONS ET TRANSITIONS AVANCÉES
+   ============================================ */
+
+/* Animation d'apparition progressive pour les éléments */
+.fade-in {
+	opacity: 0;
+	animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Animation de pulsation pour les éléments importants */
+.pulse {
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.05);
+	}
+}
+
+/* Effet de glitch pour les erreurs */
+.glitch {
+	animation: glitch 0.3s ease-in-out;
+}
+
+@keyframes glitch {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20% {
+		transform: translateX(-2px);
+	}
+	40% {
+		transform: translateX(2px);
+	}
+	60% {
+		transform: translateX(-1px);
+	}
+	80% {
+		transform: translateX(1px);
+	}
+}
+
+/* Animation de succès */
+.success-bounce {
+	animation: successBounce 0.6s ease-out;
+}
+
+@keyframes successBounce {
+	0% {
+		transform: scale(0.8);
+	}
+	50% {
+		transform: scale(1.1);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* ============================================
+   ACCESSIBILITÉ ET PRÉFÉRENCES UTILISATEUR
+   ============================================ */
+
+/* Réduction des animations pour les utilisateurs sensibles */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* Mode sombre forcé pour les appareils qui le supportent */
+@media (prefers-color-scheme: dark) {
+	/* Les styles sont déjà optimisés pour le mode sombre */
+}
+
+/* Amélioration du contraste pour une meilleure lisibilité */
+@media (prefers-contrast: high) {
+	#app .gamePage .questionContainer .reponses .radio .reponse {
+		border-width: 3px;
+	}
+
+	#app .actionButton {
+		border-width: 3px;
+	}
+}
+
+/* ============================================
+   UTILITAIRES
+   ============================================ */
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.no-select {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.pointer-events-none {
+	pointer-events: none;
+}
+
+.transition-all {
+	transition: all 0.3s ease;
 }
