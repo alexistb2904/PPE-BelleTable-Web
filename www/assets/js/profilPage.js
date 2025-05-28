@@ -4,16 +4,14 @@ const changePasswordBtn = document.getElementById('changePassword');
 function editAccount() {
 	const username = document.querySelector('input[name="username"]');
 	const email = document.querySelector('input[name="email"]');
-	const password = document.querySelector('input[name="password"]');
 	const idUser = document.querySelector('input[name="idUser"]');
 
-	if (!username.value || !email.value || !password.value) {
+	if (!username.value || !email.value) {
 		popUp('red', 5000, 'Erreur', 'Veuillez remplir tous les champs', 'error');
 	} else {
 		const data = {
 			username: username.value,
 			email: email.value,
-			password: password.value,
 			idUser: idUser.value,
 		};
 		loadingSpinner();

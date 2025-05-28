@@ -1,7 +1,73 @@
-const loginBtn = document.querySelector('.CTA_nav#loginBtn');
-const registerBtn = document.querySelector('.CTA_nav#registerBtn');
-const logoutBtn = document.querySelector('.CTA_nav#logoutBtn');
+// Modern Header Navigation JavaScript
+const loginBtn = document.querySelector('#loginBtn');
+const registerBtn = document.querySelector('#registerBtn');
+const logoutBtn = document.querySelector('#logoutBtn');
+const mobileLoginBtn = document.querySelector('#mobileLoginBtn');
+const mobileRegisterBtn = document.querySelector('#mobileRegisterBtn');
+const mobileLogoutBtn = document.querySelector('#mobileLogoutBtn');
+const userMenuBtn = document.querySelector('#userMenuBtn');
+const userDropdown = document.querySelector('#userDropdown');
+const mobileMenuBtn = document.querySelector('#mobileMenuBtn');
+const mobileMenuOverlay = document.querySelector('#mobileMenuOverlay');
+const mobileCloseBtn = document.querySelector('#mobileCloseBtn');
 const relativePath = document.querySelector('#relativePath').textContent;
+
+// User menu functionality
+if (userMenuBtn && userDropdown) {
+	userMenuBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		const userMenu = userMenuBtn.parentElement;
+		userMenu.classList.toggle('active');
+	});
+
+	// Close dropdown when clicking outside
+	document.addEventListener('click', (e) => {
+		if (!userMenuBtn.contains(e.target)) {
+			const userMenu = userMenuBtn.parentElement;
+			userMenu.classList.remove('active');
+		}
+	});
+}
+
+// Mobile menu functionality
+if (mobileMenuBtn && mobileMenuOverlay) {
+	mobileMenuBtn.addEventListener('click', () => {
+		mobileMenuBtn.classList.toggle('active');
+		mobileMenuOverlay.classList.toggle('active');
+		document.body.style.overflow = mobileMenuOverlay.classList.contains('active') ? 'hidden' : '';
+	});
+
+	mobileCloseBtn?.addEventListener('click', () => {
+		mobileMenuBtn.classList.remove('active');
+		mobileMenuOverlay.classList.remove('active');
+		document.body.style.overflow = '';
+	});
+
+	mobileMenuOverlay.addEventListener('click', (e) => {
+		if (e.target === mobileMenuOverlay) {
+			mobileMenuBtn.classList.remove('active');
+			mobileMenuOverlay.classList.remove('active');
+			document.body.style.overflow = '';
+		}
+	});
+}
+
+// Active page highlighting
+function setActiveNavLink() {
+	const currentPath = window.location.pathname;
+	const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+
+	navLinks.forEach((link) => {
+		const href = link.getAttribute('href');
+		if (href && currentPath.includes(href.replace(relativePath, ''))) {
+			link.style.background = 'linear-gradient(135deg, rgba(241, 53, 109, 0.2), rgba(241, 53, 109, 0.3))';
+			link.style.color = 'var(--primary)';
+		}
+	});
+}
+
+// Initialize active nav link on page load
+document.addEventListener('DOMContentLoaded', setActiveNavLink);
 
 function createModal(forWhat) {
 	const modal = document.createElement('div');
@@ -177,14 +243,54 @@ function logout() {
 
 loginBtn?.addEventListener('click', () => {
 	createModal('login');
+	// Close mobile menu if open
+	if (mobileMenuOverlay?.classList.contains('active')) {
+		mobileMenuBtn.classList.remove('active');
+		mobileMenuOverlay.classList.remove('active');
+		document.body.style.overflow = '';
+	}
 });
 
 registerBtn?.addEventListener('click', () => {
 	createModal('register');
+	// Close mobile menu if open
+	if (mobileMenuOverlay?.classList.contains('active')) {
+		mobileMenuBtn.classList.remove('active');
+		mobileMenuOverlay.classList.remove('active');
+		document.body.style.overflow = '';
+	}
 });
 
 logoutBtn?.addEventListener('click', () => {
 	logout();
+});
+
+logoutBtn?.addEventListener('click', () => {
+	logout();
+});
+
+mobileLogoutBtn?.addEventListener('click', () => {
+	logout();
+	// Close mobile menu
+	mobileMenuBtn.classList.remove('active');
+	mobileMenuOverlay.classList.remove('active');
+	document.body.style.overflow = '';
+});
+
+mobileLoginBtn?.addEventListener('click', () => {
+	createModal('login');
+	// Close mobile menu
+	mobileMenuBtn.classList.remove('active');
+	mobileMenuOverlay.classList.remove('active');
+	document.body.style.overflow = '';
+});
+
+mobileRegisterBtn?.addEventListener('click', () => {
+	createModal('register');
+	// Close mobile menu
+	mobileMenuBtn.classList.remove('active');
+	mobileMenuOverlay.classList.remove('active');
+	document.body.style.overflow = '';
 });
 
 function changePasswordModal(email, token) {
