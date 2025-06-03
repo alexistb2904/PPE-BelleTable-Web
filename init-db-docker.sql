@@ -64,7 +64,7 @@ CREATE TABLE `questionnaire` (
   `id` int NOT NULL,
   `nom` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `theme` int NOT NULL,
-  `created_by` int NOT NULL,
+  `created_by` int DEFAULT NULL,
   `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -308,7 +308,7 @@ ALTER TABLE `scores`
 CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'password123';
 GRANT ALL PRIVILEGES ON quizdb.* TO 'appuser'@'%';
 
-CREATE USER 'alexistb2904'@'%' IDENTIFIED WITH mysql_native_password BY '2099';
+CREATE USER 'alexistb2904'@'%' IDENTIFIED BY '2099';
 GRANT ALL PRIVILEGES ON quizdb.* TO 'alexistb2904'@'%';
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

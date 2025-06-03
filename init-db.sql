@@ -64,7 +64,7 @@ CREATE TABLE `questionnaire` (
   `id` int NOT NULL,
   `nom` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `theme` int NOT NULL,
-  `created_by` int NOT NULL,
+  `created_by` int DEFAULT NULL,
   `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
