@@ -1,12 +1,6 @@
 <?php
 require_once $relative_path . "util/functions.php";
 
-if (isLogin()) {
-    setCookieFunc('username');
-    setCookieFunc('role');
-    setCookieFunc('group_id');
-    setCookieFunc('id');
-}
 ?>
 
 
@@ -45,7 +39,7 @@ if (isLogin()) {
                 <div class="user-menu">
                     <button class="user-avatar" id="userMenuBtn">
                         <span class="avatar-icon">👤</span>
-                        <span class="user-name"><?php echo $_COOKIE['username'] ?? 'User'; ?></span>
+                        <span class="user-name"><?php echo $_SESSION['username'] ?? 'User'; ?></span>
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="user-dropdown" id="userDropdown">
