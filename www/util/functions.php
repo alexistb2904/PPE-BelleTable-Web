@@ -650,7 +650,7 @@ if (!function_exists('startSession')) {
         require_once 'db.php';
         global $cnx;
         try {
-            $sql = "SELECT id, username, email, role, groupe_id FROM users WHERE username = :identifier OR email = :identifier AND password = :password";
+            $sql = "SELECT id, username, email, role, groupe_id FROM users WHERE (username = :identifier OR email = :identifier) AND password = :password";
             $stmt = $cnx->prepare($sql);
             $stmt->execute([':identifier' => $identifier, ':password' => hash('sha256', $password)]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);

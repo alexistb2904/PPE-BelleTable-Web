@@ -363,9 +363,11 @@ function changePasswordModal(email, token) {
 					popUp('base', 3000, 'Mot de passe changé avec succès');
 
 					setTimeout(() => {
-						window.location.search = '';
-						window.location.reload();
-					}, 3000);
+						window.history.replaceState({}, document.title, window.location.pathname);
+						setTimeout(() => {
+							window.location.reload();
+						}, 100);
+					}, 2000);
 					form.style.cursor = 'default';
 				} else {
 					popUp('red', 5000, 'Erreur', data.error);
