@@ -437,14 +437,20 @@ async function startGame(results, time, points) {
                 `;
 				})
 				.join('')}
-            <button class="actionButton">Recommencer</button>
+            <button class="actionButton retry">Recommencer</button>
+            <button class="actionButton menu">Retourner au menu</button>
         `;
 		gamePage.appendChild(resultPage);
 
 		// Gestionnaire d'événement pour le bouton "Recommencer"
-		resultPage.querySelector('.actionButton').addEventListener('click', () => {
+		resultPage.querySelector('.actionButton.retry').addEventListener('click', () => {
 			gamePage.remove(); // Suppression de la page des résultats
 			configPage(); // Retour à la page de configuration
+		});
+		// Gestionnaire d'événement pour le bouton "Retourner au menu"
+		resultPage.querySelector('.actionButton.menu').addEventListener('click', () => {
+			gamePage.remove(); // Suppression de la page des résultats
+			window.location.href = '../'; // Redirection vers le menu principal
 		});
 	}
 
