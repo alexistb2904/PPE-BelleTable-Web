@@ -62,6 +62,7 @@ Si vous ne souhaitez pas utiliser Docker, vous pouvez tout de même exécuter ce
     -   Installer les dépendances PHP :
 
         ```bash
+        cd www
         composer install
         ```
 
